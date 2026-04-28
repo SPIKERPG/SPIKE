@@ -726,12 +726,39 @@ footer {
   .zone-row { flex-wrap: wrap; }
   .cover-meta { flex-wrap: wrap; }
 }
+
+/* ── MOBILE IMPROVEMENTS ── */
+@media (max-width: 600px) {
+  /* Hide redundant top-band spans, keep back link */
+  .header-band span { display: none; }
+  .header-band a { font-size: 11px !important; letter-spacing: .12em !important; }
+
+  /* Nav: bigger tap targets & readable text */
+  nav a {
+    font-size: 11px;
+    padding: 13px 14px;
+    letter-spacing: .1em;
+  }
+
+  /* Scale up tiny mono labels */
+  .cds, .section-label, .subsection-label,
+  .attr-label, .zone-tag, .card-doc-id,
+  .tag, .skill-tag { font-size: 11px !important; }
+
+  /* Slightly larger body text */
+  p, li { font-size: 15px; }
+
+  /* More breathing room in main */
+  .main, .content { padding-left: 16px; padding-right: 16px; }
+}
+
 </style>
 </head>
 <body>
 
 <!-- ═══ HEADER ═══ -->
 <div class="header-band">
+  <a href="index.html" style="font-family:'Share Tech Mono',monospace;font-size:8.5px;letter-spacing:.18em;color:inherit;text-decoration:none;opacity:.85;transition:opacity .15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">← OPERATIVE PORTAL</a>
   <span>■ UNITED GLOBAL DIRECTORATE ■ FIELD OPERATIONS ■</span>
   <span>DOCUMENT 22-A // REV.01 // YEAR 5 POST-RESET</span>
   <span>■ AUTHORIZED PERSONNEL ONLY ■</span>

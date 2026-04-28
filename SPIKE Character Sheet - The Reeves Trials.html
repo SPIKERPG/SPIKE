@@ -712,11 +712,31 @@ body::after {
 }
 .save-status.ok   { color: var(--green); }
 .save-status.warn { color: var(--amber); }
+
+/* ── MOBILE IMPROVEMENTS ── */
+@media (max-width: 600px) {
+  /* Hide redundant top-band spans, keep back link */
+  .top-band span { display: none; }
+  .top-band a { font-size: 11px !important; letter-spacing: .12em !important; }
+
+  /* Scale up tiny mono labels on the sheet */
+  .field-label, .section-label, .sub-label,
+  .attr-label, .skill-label, .sheet-label { font-size: 11px !important; }
+
+  /* Save toolbar: bigger buttons */
+  .save-toolbar button, .save-toolbar label {
+    font-size: 11px !important;
+    padding: 10px 14px !important;
+    min-height: 44px;
+  }
+}
+
 </style>
 </head>
 <body>
 
 <div class="top-band">
+  <a href="index.html" style="font-family:'Share Tech Mono',monospace;font-size:8.5px;letter-spacing:.18em;color:inherit;text-decoration:none;opacity:.85;transition:opacity .15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">← OPERATIVE PORTAL</a>
   <span>■ UNITED GLOBAL DIRECTORATE ■ CLASSIFIED ■</span>
   <span>FIELD OPERATIVE DOSSIER // DOCUMENT 14-C</span>
   <span>■ SPIKE: THE REEVES TRIALS // YEAR 5 ■</span>

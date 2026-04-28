@@ -714,11 +714,35 @@ footer {
   .top-band { font-size: 7px; }
   .cover-title { font-size: 48px; }
 }
+
+/* ── MOBILE IMPROVEMENTS ── */
+@media (max-width: 600px) {
+  /* Hide redundant top-band spans, keep back link */
+  .top-band span { display: none; }
+  .top-band a { font-size: 11px !important; letter-spacing: .12em !important; }
+
+  /* Nav: bigger tap targets & readable text */
+  nav a {
+    font-size: 11px;
+    padding: 13px 14px;
+    letter-spacing: .1em;
+  }
+
+  /* Scale up tiny mono labels */
+  .section-label, .sub-label, .cds,
+  .tool-label, .card-label { font-size: 11px !important; }
+
+  p, li { font-size: 15px; }
+
+  .main, .content, .wrap { padding-left: 16px; padding-right: 16px; }
+}
+
 </style>
 </head>
 <body>
 
 <div class="top-band">
+  <a href="index.html" style="font-family:'Share Tech Mono',monospace;font-size:8.5px;letter-spacing:.18em;color:inherit;text-decoration:none;opacity:.85;transition:opacity .15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'">← OPERATIVE PORTAL</a>
   <span>■ SPIKE: THE REEVES TRIALS ■ TABLE SAFETY DOCUMENT ■</span>
   <span>FOR ALL PARTICIPANTS // OUT OF WORLD</span>
   <span>■ YEAR 5 POST-RESET ■</span>
