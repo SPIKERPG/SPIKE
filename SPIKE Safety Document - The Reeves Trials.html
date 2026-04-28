@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPIKE: The Reeves Trials — Safety & Table Contract</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
+
+:root {
+  --bg:           #0b0c09;
+  --surface:      #111309;
+  --surface2:     #161810;
+  --surface3:     #1c1f14;
+  --border:       #232618;
+  --border-hi:    #303520;
+  --text:         #b8baa5;
+  --text-dim:     #626554;
+  --text-hi:      #dfe1cc;
+  --green:        #7a9a28;
+  --green-dim:    #4a5e18;
+  --green-pale:   #252e0c;
+  --red:          #8a2020;
+  --red-bright:   #c03030;
+  --amber:        #b87820;
+  --amber-dim:    #6e4810;
+  --amber-pale:   #2a1e06;
+  --blue-dim:     #1a2a3a;
+  --blue:         #4a7a9a;
+  --blue-pale:    #0e1a22;
+  --input-bg:     rgba(0,0,0,.28);
+  --input-border: #2a2e1a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent 0px, transparent 3px,
+    rgba(0,0,0,0.05) 3px, rgba(0,0,0,0.05) 4px
+  );
+  pointer-events: none;
+  z-index: 9000;
+}
+
+/* ─── BANDS ─── */
+.top-band {
+  background: var(--green);
+  padding: 3px 24px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .2em;
+  color: var(--bg);
+}
+
+/* ─── HEADER ─── */
+.main-header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--green-dim);
+  padding: 14px 28px;
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mh-left, .mh-right {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .16em;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.mh-center { text-align: center; }
+
+.mh-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: .4em;
+  color: var(--text-hi);
+  line-height: 1;
+}
+
+.mh-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .22em;
+  color: var(--green);
+  margin-top: 3px;
+}
+
+/* ─── NAV ─── */
+nav {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  overflow-x: auto;
+  padding: 0 28px;
+  gap: 0;
+  scrollbar-width: none;
+}
+nav::-webkit-scrollbar { display: none; }
+
+nav a {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 8px 18px;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  transition: all .15s;
+}
+nav a:first-child { border-left: 1px solid var(--border); }
+nav a:hover, nav a.active { color: var(--green); background: rgba(122,154,40,.07); }
+
+/* ─── COVER ─── */
+.cover {
+  max-width: 900px;
+  margin: 36px auto;
+  background: var(--surface2);
+  border: 1px solid var(--border-hi);
+  padding: 52px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cover::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--red-bright), transparent);
+}
+
+.cover-wm {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.cover-wm span {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 90px;
+  letter-spacing: .06em;
+  color: rgba(192,48,48,.04);
+  transform: rotate(-16deg);
+  white-space: nowrap;
+}
+
+.cover-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .32em;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+
+.cover-rule {
+  display: flex; align-items: center; gap: 14px;
+  max-width: 440px; margin: 0 auto 18px;
+}
+.cover-rule-line { flex: 1; height: 1px; background: var(--border-hi); }
+.cover-rule-dot  { font-family: 'Share Tech Mono', monospace; font-size: 8px; color: var(--red-bright); }
+
+.cover-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 68px;
+  letter-spacing: .42em;
+  color: var(--text-hi);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.cover-subtitle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .25em;
+  color: var(--red-bright);
+  margin-bottom: 10px;
+}
+
+.cover-doc-type {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: .5em;
+  color: var(--text-dim);
+  margin-bottom: 36px;
+}
+
+.cover-note {
+  max-width: 520px;
+  margin: 0 auto 30px;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--text-dim);
+  line-height: 1.7;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+}
+
+.cover-pills {
+  display: flex; justify-content: center; gap: 0;
+  flex-wrap: wrap;
+}
+.cpill {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .16em;
+  color: var(--text-dim);
+  padding: 5px 20px;
+  border: 1px solid var(--border-hi);
+  border-right: none;
+}
+.cpill:last-child { border-right: 1px solid var(--border-hi); }
+
+/* ─── MAIN ─── */
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+}
+
+/* ─── SECTION ─── */
+.section {
+  margin-bottom: 60px;
+  scroll-margin-top: 100px;
+}
+
+.section-head {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 24px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-hi);
+}
+.sh-num   { font-family: 'Share Tech Mono', monospace; font-size: 8.5px; letter-spacing: .2em; color: var(--green); white-space: nowrap; }
+.sh-title { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: .22em; color: var(--text-hi); }
+.sh-line  { flex: 1; height: 1px; background: var(--border); }
+
+/* ─── OOW FLAG ─── */
+.oow-flag {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .18em;
+  color: var(--amber);
+  background: var(--amber-pale);
+  border: 1px solid var(--amber-dim);
+  padding: 3px 10px;
+  margin-bottom: 14px;
+}
+
+.protocol-flag {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .18em;
+  color: var(--red-bright);
+  background: rgba(138,32,32,.08);
+  border: 1px solid var(--red);
+  padding: 3px 10px;
+  margin-bottom: 14px;
+}
+
+/* ─── PANELS ─── */
+.panel {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green-dim);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+.panel.amber  { border-left-color: var(--amber-dim); }
+.panel.red    { border-left-color: var(--red); background: rgba(138,32,32,.05); }
+.panel.blue   { border-left-color: var(--blue); background: var(--blue-pale); border-color: rgba(74,122,154,.2); }
+.panel.hi     { border: 1px solid var(--border-hi); border-left: 3px solid var(--green); }
+.panel.quiet  { border-left-color: var(--border-hi); background: rgba(0,0,0,.2); }
+
+.panel-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px; letter-spacing: .2em;
+  color: var(--green);
+  margin-bottom: 10px; padding-bottom: 7px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title.amber { color: var(--amber); }
+.panel-title.red   { color: var(--red-bright); }
+.panel-title.blue  { color: var(--blue); }
+.panel-title.hi    { color: var(--text-hi); }
+
+/* ─── GRIDS ─── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* ─── PROSE ─── */
+p { margin-bottom: 12px; font-size: 15.5px; line-height: 1.65; }
+p:last-child { margin-bottom: 0; }
+ul, ol { margin: 8px 0 12px 20px; }
+li { margin-bottom: 5px; font-size: 14.5px; line-height: 1.55; }
+strong { color: var(--text-hi); font-weight: 700; }
+em { font-style: italic; color: var(--text); }
+
+/* ─── TOOL CARDS ─── */
+.tool-card {
+  background: var(--surface2);
+  border: 1px solid var(--border-hi);
+  border-top: 2px solid var(--green-dim);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.tool-card.red    { border-top-color: var(--red-bright); }
+.tool-card.amber  { border-top-color: var(--amber-dim); }
+.tool-card.blue   { border-top-color: var(--blue); }
+
+.tool-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,.15);
+}
+
+.tool-sigil {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: .1em;
+  color: var(--green);
+  line-height: 1;
+  min-width: 44px;
+  text-align: center;
+}
+.tool-card.red   .tool-sigil { color: var(--red-bright); }
+.tool-card.amber .tool-sigil { color: var(--amber); }
+.tool-card.blue  .tool-sigil { color: var(--blue); }
+
+.tool-name-block {}
+.tool-code {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px; letter-spacing: .24em;
+  color: var(--text-dim);
+}
+.tool-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: .28em;
+  color: var(--text-hi);
+  line-height: 1.1;
+}
+.tool-card.red   .tool-name { color: var(--red-bright); }
+.tool-card.amber .tool-name { color: var(--amber); }
+.tool-card.blue  .tool-name { color: var(--blue); }
+
+.tool-body { padding: 14px 16px; }
+.tool-body p { font-size: 14.5px; }
+.tool-body p:last-child { margin-bottom: 0; }
+
+.tool-mechanic {
+  background: rgba(0,0,0,.25);
+  border-left: 2px solid var(--green-dim);
+  padding: 8px 12px;
+  margin: 10px 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .05em;
+  color: var(--text-hi);
+  line-height: 1.6;
+}
+.tool-card.red   .tool-mechanic { border-left-color: var(--red); }
+.tool-card.amber .tool-mechanic { border-left-color: var(--amber-dim); }
+.tool-card.blue  .tool-mechanic { border-left-color: var(--blue); }
+
+/* ─── LINES & VEILS ─── */
+.lv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.lv-box {
+  background: var(--surface2);
+  border: 1px solid var(--border-hi);
+}
+
+.lv-header {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,.18);
+  display: flex; align-items: center; gap: 10px;
+}
+
+.lv-icon {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  min-width: 22px;
+}
+
+.lv-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px; letter-spacing: .2em;
+  line-height: 1.4;
+}
+
+.lv-box.line .lv-title  { color: var(--red-bright); }
+.lv-box.veil .lv-title  { color: var(--amber); }
+
+.lv-def {
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  font-style: italic;
+}
+
+.lv-items {
+  padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.lv-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  padding: 5px 8px;
+  min-height: 28px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.lv-item-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px; letter-spacing: .12em;
+  color: var(--text-dim);
+  min-width: 16px;
+  padding-top: 2px;
+}
+
+.lv-item input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-hi);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  caret-color: var(--green);
+  width: 100%;
+}
+.lv-item input::placeholder { color: var(--text-dim); font-weight: 300; font-size: 13px; }
+
+.lv-add-btn {
+  margin: 4px 14px 10px;
+  background: transparent;
+  border: 1px dashed var(--border-hi);
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px; letter-spacing: .16em;
+  padding: 4px 10px;
+  cursor: pointer;
+  width: calc(100% - 28px);
+  transition: all .15s;
+  text-align: center;
+}
+.lv-add-btn:hover { border-color: var(--green-dim); color: var(--green); }
+
+/* ─── TABLE CONTRACT ─── */
+.contract-block {
+  background: var(--surface2);
+  border: 1px solid var(--border-hi);
+  border-top: 2px solid var(--green);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.contract-block-header {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,.2);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .22em;
+  color: var(--green);
+}
+
+.contract-items {
+  padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.contract-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 7px 10px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+}
+
+.contract-check {
+  width: 16px; height: 16px;
+  border: 1px solid var(--border-hi);
+  flex-shrink: 0;
+  cursor: pointer;
+  margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+  font-size: 10px;
+  color: transparent;
+}
+.contract-check.checked {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.contract-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.contract-text strong { font-weight: 600; }
+.contract-item.checked-item .contract-text { color: var(--text-dim); }
+
+/* ─── OPEN QUESTIONS ─── */
+.oq-field {
+  margin-bottom: 10px;
+}
+
+.oq-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px; letter-spacing: .18em;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.oq-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: none;
+  border-bottom: 1px solid var(--input-border);
+  color: var(--text-hi);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14.5px;
+  padding: 5px 4px;
+  outline: none;
+  caret-color: var(--green);
+  transition: border-color .15s;
+}
+.oq-input:focus { border-bottom-color: var(--green-dim); }
+.oq-input::placeholder { color: var(--text-dim); font-weight: 300; font-size: 13px; }
+
+textarea.oq-input {
+  resize: none;
+  min-height: 60px;
+  line-height: 1.5;
+  display: block;
+  border: 1px solid var(--input-border);
+  border-bottom: 1px solid var(--input-border);
+  padding: 6px 8px;
+}
+
+/* ─── PLAYER ROWS ─── */
+.player-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+}
+.player-table th {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px; letter-spacing: .16em;
+  color: var(--green);
+  text-align: left;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border-hi);
+  font-weight: 400;
+  background: rgba(0,0,0,.15);
+}
+.player-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.player-table td input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-hi);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  padding: 3px 4px;
+  caret-color: var(--green);
+}
+.player-table td input::placeholder { color: var(--text-dim); font-size: 13px; }
+
+/* ─── QUICK REF CARD ─── */
+.qr-card {
+  background: var(--surface3);
+  border: 1px solid var(--border-hi);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.qr-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .2em;
+  color: var(--amber);
+  margin-bottom: 8px;
+}
+.qr-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-bottom: 7px;
+  font-size: 14px;
+}
+.qr-signal {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-hi);
+  min-width: 70px;
+  padding-top: 1px;
+}
+.qr-meaning { color: var(--text-dim); line-height: 1.45; }
+
+/* ─── PULL QUOTE ─── */
+.pull-quote {
+  border-top: 1px solid var(--border-hi);
+  border-bottom: 1px solid var(--border-hi);
+  padding: 18px 24px;
+  margin: 20px 0;
+  text-align: center;
+}
+.pq-text {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 19px; font-style: italic;
+  color: var(--text-hi); line-height: 1.5;
+  font-weight: 300; letter-spacing: .04em;
+}
+.pq-attr {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .18em;
+  color: var(--text-dim); margin-top: 8px;
+}
+
+/* ─── UTIL ─── */
+.mbr  { margin-bottom: 18px; }
+.dim  { color: var(--text-dim); }
+.grn  { color: var(--green); }
+.amb  { color: var(--amber); }
+.red-c { color: var(--red-bright); }
+
+/* ─── SAVE TOOLBAR ─── */
+.save-toolbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border-hi);
+  padding: 8px 20px;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 600;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .14em;
+}
+.save-toolbar-label { color: var(--text-dim); white-space: nowrap; }
+.save-btn {
+  background: var(--green-dim);
+  border: 1px solid var(--green);
+  color: var(--text-hi);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .2em;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.save-btn:hover { background: var(--green); color: var(--bg); }
+.save-btn.load-btn { background: transparent; border-color: var(--border-hi); color: var(--text-dim); }
+.save-btn.load-btn:hover { border-color: var(--green-dim); color: var(--text); }
+.save-btn.reset-btn { background: transparent; border-color: var(--red); color: var(--red-bright); }
+.save-btn.reset-btn:hover { background: var(--red); color: var(--text-hi); }
+.save-status {
+  flex: 1; text-align: right;
+  color: var(--text-dim); font-size: 7.5px; letter-spacing: .12em;
+  transition: color .3s;
+}
+.save-status.ok   { color: var(--green); }
+.save-status.warn { color: var(--amber); }
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between;
+  padding: 10px 28px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .12em;
+  color: var(--text-dim);
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 720px) {
+  .g2, .g3, .lv-grid { grid-template-columns: 1fr; }
+  .top-band { font-size: 7px; }
+  .cover-title { font-size: 48px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-band">
+  <span>■ SPIKE: THE REEVES TRIALS ■ TABLE SAFETY DOCUMENT ■</span>
+  <span>FOR ALL PARTICIPANTS // OUT OF WORLD</span>
+  <span>■ YEAR 5 POST-RESET ■</span>
+</div>
+
+<header class="main-header">
+  <div class="mh-left">SPIKE: THE REEVES TRIALS<br>SAFETY & TABLE CONTRACT</div>
+  <div class="mh-center">
+    <div class="mh-title">BEFORE WE PLAY</div>
+    <div class="mh-sub">SAFETY TOOLS · TABLE AGREEMENTS · LINES & VEILS</div>
+  </div>
+  <div class="mh-right" style="text-align:right;">YEAR 5 POST-RESET<br>INDIANA RECOVERY OP</div>
+</header>
+
+<nav>
+  <a href="#why">■ WHY THIS EXISTS</a>
+  <a href="#tools">■ SAFETY TOOLS</a>
+  <a href="#lines">■ LINES & VEILS</a>
+  <a href="#contract">■ TABLE CONTRACT</a>
+  <a href="#players">■ PLAYER INFO</a>
+  <a href="#checkin">■ CHECK-IN</a>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-wm"><span>SAFETY</span></div>
+  <div class="cover-tag">■ SPIKE: THE REEVES TRIALS ■ FOR ALL PARTICIPANTS ■</div>
+  <div class="cover-rule">
+    <div class="cover-rule-line"></div>
+    <span class="cover-rule-dot">■ ■ ■</span>
+    <div class="cover-rule-line"></div>
+  </div>
+  <div class="cover-title">TABLE</div>
+  <div class="cover-title" style="margin-top:-18px; color: var(--red-bright);">SAFETY</div>
+  <div class="cover-subtitle">THE REEVES TRIALS // YEAR 5 POST-RESET</div>
+  <div class="cover-doc-type">Protocol & Table Contract</div>
+  <div class="cover-note">
+    SPIKE deals in psychological horror, grief, emotional dysregulation, and loss of self.<br>
+    This document exists so that everyone at the table can explore difficult fiction safely.<br>
+    <span class="dim">These tools are not optional add-ons. They are load-bearing infrastructure for the game we want to have.</span>
+  </div>
+  <div class="cover-pills">
+    <div class="cpill">SAFETY TOOLS</div>
+    <div class="cpill">LINES & VEILS</div>
+    <div class="cpill">TABLE CONTRACT</div>
+    <div class="cpill">OUT OF WORLD</div>
+  </div>
+</div>
+
+<main>
+
+<!-- ══════════════════════════════
+     01. WHY THIS EXISTS
+═══════════════════════════════ -->
+<section class="section" id="why">
+  <div class="section-head">
+    <span class="sh-num">01 //</span>
+    <span class="sh-title">WHY THIS EXISTS</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="oow-flag">■ OUT OF WORLD — ALL PARTICIPANTS</div>
+
+  <div class="panel hi mbr">
+    <div class="panel-title hi">THIS GAME GOES PLACES</div>
+    <p>SPIKE: The Reeves Trials is a game about psychological unraveling, grief, loss of control, and what happens when people are denied their own emotional lives. It is also a game about care, loyalty, and what it means to be human. Both of those things are true simultaneously, and holding both is the work.</p>
+    <p>The content in this campaign can include: body horror (mild), dissociation and loss of self, grief and loss, psychological manipulation, institutionalized control, identity and memory, and the experience of emotions that have no name or framework. None of this is presented gratuitously — it all serves the story. But it is real, and some of it may land harder than expected for some people at some times.</p>
+    <p style="margin-bottom:0;">The tools in this document are not a sign that the game is dangerous. They are a sign that the people running it care enough to build in ways to navigate it well. Use them. That's what they're for.</p>
+  </div>
+
+  <div class="g2 mbr">
+    <div class="panel quiet">
+      <div class="panel-title">THE REAL-WORLD PRINCIPLE</div>
+      <p>The fiction exists to serve the people at the table — not the other way around. No story beat, dramatic moment, or narrative payoff is worth genuine distress for a real person. The characters are in danger. The players never are.</p>
+      <p style="margin-bottom:0;">If something stops working for someone, the story adjusts. That's not a failure. That's the game functioning correctly.</p>
+    </div>
+    <div class="panel quiet">
+      <div class="panel-title">NO EXPLANATION REQUIRED</div>
+      <p>When a player uses any safety tool, no one asks why. No one needs to know why. The tool is used, the table responds, and play continues or adjusts. We trust each other enough not to require justification.</p>
+      <p style="margin-bottom:0;">The same applies to the GM. If a scene isn't going the way it should, the GM can call a pause too.</p>
+    </div>
+  </div>
+
+  <div class="pull-quote">
+    <div class="pq-text">"We are here to tell a story together. The safety tools are how we make sure everyone stays in the room long enough to see how it ends."</div>
+    <div class="pq-attr">— TABLE SAFETY PRINCIPLE</div>
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════
+     02. SAFETY TOOLS
+═══════════════════════════════ -->
+<section class="section" id="tools">
+  <div class="section-head">
+    <span class="sh-num">02 //</span>
+    <span class="sh-title">SAFETY TOOLS</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="oow-flag">■ OUT OF WORLD — ACTIVE PROTOCOLS</div>
+
+  <p style="margin-bottom:18px; font-size:15px;">These are the specific safety mechanics this table uses. Everyone should read and understand all of them before Session 1. They are fast, low-friction, and never require explanation.</p>
+
+  <!-- X CARD -->
+  <div class="tool-card red mbr">
+    <div class="tool-header">
+      <div class="tool-sigil">X</div>
+      <div class="tool-name-block">
+        <div class="tool-code">PROTOCOL ST-01 // IMMEDIATE STOP</div>
+        <div class="tool-name">THE X-CARD</div>
+      </div>
+    </div>
+    <div class="tool-body">
+      <p>The X-Card is a hard stop. When someone invokes it — by saying <strong>"X"</strong>, typing X in chat, or physically tapping a card on the table — the current scene or content stops immediately. No discussion. No questions. The table moves on or the scene is edited.</p>
+      <div class="tool-mechanic">HOW TO USE IT<br>
+        Say: "X" or "X-card" aloud / type X in chat<br>
+        Result: Scene stops. GM adjusts, skips, or cuts. Play resumes.<br>
+        Who can use it: ANYONE at the table, including the GM<br>
+        Explanation required: NO</div>
+      <p>The X-Card is not a last resort. It's a first resort. Using it earlier — before something becomes genuinely distressing — is always the right call. There is no content in this campaign that is more important than the person reaching for the X-Card.</p>
+    </div>
+  </div>
+
+  <!-- OPEN DOOR -->
+  <div class="tool-card amber mbr">
+    <div class="tool-header">
+      <div class="tool-sigil">⬚</div>
+      <div class="tool-name-block">
+        <div class="tool-code">PROTOCOL ST-02 // EXIT WITHOUT PENALTY</div>
+        <div class="tool-name">THE OPEN DOOR</div>
+      </div>
+    </div>
+    <div class="tool-body">
+      <p>Anyone can leave the session at any time, for any reason, without explanation. The door is always open. This is not dramatic. It is not a disruption. It is a standing permission that exists for everyone, always, before it is ever needed.</p>
+      <div class="tool-mechanic">HOW TO USE IT<br>
+        Say: "I need to step out" or simply leave<br>
+        Result: Session pauses, continues without you, or ends — your call<br>
+        Who can use it: ANYONE at the table, including the GM<br>
+        Explanation required: NO</div>
+      <p>When someone steps out, the table does not speculate about why. When they return — or don't — the table picks up where it left off. We don't track who has used the door or how often. We do not make it notable. It's just a door.</p>
+      <p style="margin-bottom:0;">If you need to step away and come back, come back. If you need to be done for the session, be done. If you want to check in after, that's welcome. None of it is required.</p>
+    </div>
+  </div>
+
+  <!-- PAUSE SIGNAL -->
+  <div class="tool-card blue mbr">
+    <div class="tool-header">
+      <div class="tool-sigil">||</div>
+      <div class="tool-name-block">
+        <div class="tool-code">PROTOCOL ST-03 // STEP OUTSIDE THE FICTION</div>
+        <div class="tool-name">THE PAUSE / OOW SIGNAL</div>
+      </div>
+    </div>
+    <div class="tool-body">
+      <p>The Pause signal steps out of the fiction without stopping it entirely. Use it to check in, ask a question, clarify intent, or flag that something needs a brief conversation before continuing. This is less than an X-Card — it doesn't stop a scene, it pauses it.</p>
+      <div class="tool-mechanic">HOW TO USE IT<br>
+        Say: "OOW" (out of world) or "Pause" or make a T-shape with your hands<br>
+        Result: Table steps outside the fiction briefly. GM or player speaks. Resume when ready.<br>
+        Who can use it: ANYONE at the table, including the GM<br>
+        Explanation required: BRIEF — just enough to address what needs addressing</div>
+      <p>Common uses: <em>"OOW — I want to make sure we're all okay with where this is going before it goes there."</em> Or: <em>"Pause — can we talk about how my character would realistically respond to this?"</em> Or simply: <em>"OOW — five-minute break please."</em></p>
+      <p style="margin-bottom:0;">When you return to the fiction, it helps to signal it: <em>"Back in."</em> This prevents confusion about whether people are speaking as themselves or as characters.</p>
+    </div>
+  </div>
+
+  <!-- REWIND -->
+  <div class="tool-card mbr">
+    <div class="tool-header">
+      <div class="tool-sigil">↺</div>
+      <div class="tool-name-block">
+        <div class="tool-code">PROTOCOL ST-04 // NARRATIVE EDIT</div>
+        <div class="tool-name">THE REWIND</div>
+      </div>
+    </div>
+    <div class="tool-body">
+      <p>The Rewind lets anyone call for an edit to something that already happened in fiction — if a scene went somewhere uncomfortable and an X-Card wasn't reached for quickly enough, or if something landed wrong in retrospect. The scene can be retroactively adjusted.</p>
+      <div class="tool-mechanic">HOW TO USE IT<br>
+        Say: "Can we rewind that?" or "I want to edit [scene/moment]"<br>
+        Result: Table discusses briefly. GM adjusts what happened. New version is canon.<br>
+        Who can use it: ANYONE at the table, including the GM<br>
+        Explanation required: MINIMAL — enough to identify what needs changing</div>
+      <p style="margin-bottom:0;">The Rewind is not about retconning for convenience. It is specifically a safety tool — use it when something didn't sit right and you wish it had gone differently. The GM makes the call on how to adjust, with input from the person who called for it.</p>
+    </div>
+  </div>
+
+  <!-- QUICK REFERENCE -->
+  <div class="qr-card">
+    <div class="qr-title">■ QUICK REFERENCE // ALL SIGNALS AT A GLANCE</div>
+    <div class="qr-row"><span class="qr-signal">X / X-CARD</span><span class="qr-meaning">Hard stop. This content ends now. No questions.</span></div>
+    <div class="qr-row"><span class="qr-signal">OPEN DOOR</span><span class="qr-meaning">Anyone may leave at any time, for any reason, no explanation needed.</span></div>
+    <div class="qr-row"><span class="qr-signal">OOW / PAUSE</span><span class="qr-meaning">Step outside the fiction briefly. Check in. Resume when ready.</span></div>
+    <div class="qr-row"><span class="qr-signal">REWIND ↺</span><span class="qr-meaning">Edit something that already happened. New version is canon.</span></div>
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════
+     03. LINES & VEILS
+═══════════════════════════════ -->
+<section class="section" id="lines">
+  <div class="section-head">
+    <span class="sh-num">03 //</span>
+    <span class="sh-title">LINES & VEILS</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="oow-flag">■ OUT OF WORLD — COMPLETE BEFORE SESSION 1</div>
+
+  <div class="g2 mbr">
+    <div class="panel red">
+      <div class="panel-title red">LINES // CONTENT THAT DOES NOT APPEAR</div>
+      <p>A Line is content that does not enter the game at all. Not offscreen, not implied — it simply doesn't exist in this campaign. Once something is a Line for anyone at the table, it becomes a Line for the whole table. No negotiation.</p>
+      <p style="margin-bottom:0;">You don't need to justify a Line. "I don't want that in the game" is sufficient. Add it below.</p>
+    </div>
+    <div class="panel amber">
+      <div class="panel-title amber">VEILS // CONTENT THAT HAPPENS OFFSCREEN</div>
+      <p>A Veil is content that can exist in the fiction but happens offscreen — it is acknowledged, perhaps referenced, but not depicted in play. "We cut away before it gets to that point."</p>
+      <p style="margin-bottom:0;">Veils can be added at any time, including mid-campaign. If something becomes a Veil after it's been depicted, the Rewind tool can retroactively apply it.</p>
+    </div>
+  </div>
+
+  <div class="panel quiet mbr" style="padding:10px 14px;">
+    <p style="font-size:13.5px; margin-bottom:0;" class="dim">Fill in the fields below during Session 0. Click <strong style="color:var(--text);">+ ADD</strong> to add more entries. These save with the document when you use the Save button.</p>
+  </div>
+
+  <div class="lv-grid">
+    <!-- LINES -->
+    <div class="lv-box line">
+      <div class="lv-header">
+        <span class="lv-icon red-c">✕</span>
+        <div class="lv-title red-c">LINES<br><span style="color:var(--text-dim); font-size:7px;">DOES NOT ENTER PLAY</span></div>
+      </div>
+      <div class="lv-def">Content that will not appear in any form — not described, not implied, not offscreen.</div>
+      <div class="lv-items" id="linesItems">
+        <div class="lv-item"><span class="lv-item-num">01</span><input type="text" placeholder="Add a Line..."></div>
+        <div class="lv-item"><span class="lv-item-num">02</span><input type="text" placeholder="Add a Line..."></div>
+        <div class="lv-item"><span class="lv-item-num">03</span><input type="text" placeholder="Add a Line..."></div>
+      </div>
+      <button class="lv-add-btn" onclick="addLVItem('linesItems', 'line')">+ ADD LINE</button>
+    </div>
+
+    <!-- VEILS -->
+    <div class="lv-box veil">
+      <div class="lv-header">
+        <span class="lv-icon amb">〜</span>
+        <div class="lv-title amb">VEILS<br><span style="color:var(--text-dim); font-size:7px;">OFFSCREEN ONLY</span></div>
+      </div>
+      <div class="lv-def">Content that exists in the fiction but is not depicted in play. We cut away.</div>
+      <div class="lv-items" id="veilsItems">
+        <div class="lv-item"><span class="lv-item-num">01</span><input type="text" placeholder="Add a Veil..."></div>
+        <div class="lv-item"><span class="lv-item-num">02</span><input type="text" placeholder="Add a Veil..."></div>
+        <div class="lv-item"><span class="lv-item-num">03</span><input type="text" placeholder="Add a Veil..."></div>
+      </div>
+      <button class="lv-add-btn" onclick="addLVItem('veilsItems', 'veil')">+ ADD VEIL</button>
+    </div>
+  </div>
+
+  <div class="panel quiet">
+    <div class="panel-title">SPIKE-SPECIFIC CONTENT NOTE</div>
+    <p>Because SPIKE deals directly with psychological distress, dissociation, and emotional crisis, some content is worth explicitly discussing even if it doesn't end up as a Line or Veil. Consider having a brief conversation about:</p>
+    <ul>
+      <li>Depictions of dissociation and loss of self (SPIKE 10–11)</li>
+      <li>Grief and death of NPCs the party is attached to</li>
+      <li>Content that might mirror real-world mental health experiences</li>
+      <li>Body horror — SPIKE's physical symptoms at high levels</li>
+      <li>Manipulation, gaslighting, and institutional control (themes in the campaign)</li>
+    </ul>
+    <p style="margin-bottom:0;" class="dim">None of these are automatically Lines or Veils. They're starting points for a conversation.</p>
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════
+     04. TABLE CONTRACT
+═══════════════════════════════ -->
+<section class="section" id="contract">
+  <div class="section-head">
+    <span class="sh-num">04 //</span>
+    <span class="sh-title">TABLE CONTRACT</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="oow-flag">■ OUT OF WORLD — REVIEW AND AGREE BEFORE SESSION 1</div>
+
+  <p style="margin-bottom: 18px; font-size: 15px;">These are the agreements this table makes before play begins. Check off each item to mark that the whole table has discussed and agreed to it. These are defaults — if any item needs adjustment for your specific group, note it in the open questions section.</p>
+
+  <!-- SAFETY -->
+  <div class="contract-block">
+    <div class="contract-block-header">■ SAFETY & COMFORT</div>
+    <div class="contract-items" id="safety-items">
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>Safety tools are always available.</strong> Any participant may invoke an X-Card, call a Pause, use the Open Door, or request a Rewind at any time, with no explanation required and no social penalty.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>Lines and Veils are enforced without question.</strong> Any content that becomes a Line is removed from the game entirely, permanently, for everyone. Veiled content happens offscreen. These are not subject to in-session negotiation.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>No one is pushed through discomfort for the story's sake.</strong> If a scene is landing wrong for a real person at this table, the scene changes. The story is not more important than the person.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>Real-world distress is taken at face value.</strong> If someone says they need to stop or step out, we do not assume they are roleplaying. We treat it as real unless they clearly indicate otherwise.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAY NORMS -->
+  <div class="contract-block">
+    <div class="contract-block-header">■ PLAY NORMS</div>
+    <div class="contract-items">
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>We play our own characters.</strong> We do not dictate other players' characters' actions, emotions, or responses. We may try to influence them in fiction. We do not override them out of fiction.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>Player versus Player conflict is handled collaboratively.</strong> Mechanical PvP may exist. Any PvP that would significantly harm another player's character arc requires OOW conversation and agreement first.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>We separate character from player.</strong> What happens to a character is not happening to the player. Criticism of a character's choices is not criticism of the player. We never use fiction as a vector for real-world grievances.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>Spotlight is shared.</strong> We are attentive to who is and isn't getting screen time, and we actively create space for quieter players. The GM will help with this, but players share responsibility for it.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>We lean into the genre.</strong> SPIKE is a psychological thriller. We embrace slow tension, unreliable information, and difficult emotional content as features of the campaign, not problems to be solved quickly.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GM RESPONSIBILITIES -->
+  <div class="contract-block">
+    <div class="contract-block-header">■ GM RESPONSIBILITIES</div>
+    <div class="contract-items">
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>The GM will not use safety tools against players.</strong> Lines, Veils, and X-Cards are player protections. The GM will not exploit knowledge of what players have flagged as difficult to target them with it.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>The GM will telegraph difficult content.</strong> Before scenes that may escalate into challenging territory, the GM will give players a brief heads-up: "This scene may go to some dark places — everyone okay to continue?"</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>The GM will check in regularly.</strong> Brief check-ins at session end are standard. If play has been particularly heavy, a mid-session or post-scene check-in may happen. Players are encouraged to answer honestly.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>The GM holds the Lines and Veils.</strong> It is ultimately the GM's responsibility to remember and enforce all Lines and Veils, to ensure content that should not appear does not appear, and to redirect if a scene drifts toward it.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGISTICS -->
+  <div class="contract-block">
+    <div class="contract-block-header">■ LOGISTICS</div>
+    <div class="contract-items">
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>Session length and frequency are agreed in advance.</strong> If a session needs to end early, the GM will try to reach a reasonable pause point. Players give as much notice as possible for absences.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>Communication happens between sessions too.</strong> If something is lingering from a session — something that landed wrong, something to discuss — it is welcome to raise it between sessions rather than waiting.</div>
+      </div>
+      <div class="contract-item" onclick="toggleCheck(this)">
+        <div class="contract-check">■</div>
+        <div class="contract-text"><strong>The contract can be updated.</strong> These agreements are not static. If something needs to change as the campaign develops, any participant can raise it and the table will revisit.</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════
+     05. PLAYER INFO
+═══════════════════════════════ -->
+<section class="section" id="players">
+  <div class="section-head">
+    <span class="sh-num">05 //</span>
+    <span class="sh-title">PLAYER INFO</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="oow-flag">■ OUT OF WORLD — COMPLETE BEFORE SESSION 1</div>
+
+  <div class="panel quiet mbr" style="padding:10px 14px;">
+    <p style="font-size:13.5px; margin-bottom:0;" class="dim">Record player names, operative names, and any brief notes on individual player preferences or needs that the whole table should be aware of. This is a shared reference, not a private document.</p>
+  </div>
+
+  <div class="contract-block mbr">
+    <div class="contract-block-header">■ OPERATIVE ROSTER</div>
+    <div style="padding: 14px 16px;">
+      <table class="player-table" id="playerTable">
+        <tr>
+          <th style="width:22%">PLAYER NAME</th>
+          <th style="width:22%">OPERATIVE NAME</th>
+          <th style="width:22%">CALLSIGN</th>
+          <th>NOTES / PREFERENCES</th>
+        </tr>
+        <tr>
+          <td><input type="text" placeholder="Player 1"></td>
+          <td><input type="text" placeholder="Operative name"></td>
+          <td><input type="text" placeholder="Field callsign"></td>
+          <td><input type="text" placeholder="Any relevant notes..."></td>
+        </tr>
+        <tr>
+          <td><input type="text" placeholder="Player 2"></td>
+          <td><input type="text" placeholder="Operative name"></td>
+          <td><input type="text" placeholder="Field callsign"></td>
+          <td><input type="text" placeholder="Any relevant notes..."></td>
+        </tr>
+        <tr>
+          <td><input type="text" placeholder="Player 3"></td>
+          <td><input type="text" placeholder="Operative name"></td>
+          <td><input type="text" placeholder="Field callsign"></td>
+          <td><input type="text" placeholder="Any relevant notes..."></td>
+        </tr>
+        <tr>
+          <td><input type="text" placeholder="Player 4"></td>
+          <td><input type="text" placeholder="Operative name"></td>
+          <td><input type="text" placeholder="Field callsign"></td>
+          <td><input type="text" placeholder="Any relevant notes..."></td>
+        </tr>
+        <tr id="gmRow">
+          <td><input type="text" placeholder="GM name"></td>
+          <td><input type="text" placeholder="—" readonly style="color:var(--text-dim)"></td>
+          <td><input type="text" placeholder="GM" readonly style="color:var(--text-dim)"></td>
+          <td><input type="text" placeholder="GM notes / contact..."></td>
+        </tr>
+      </table>
+      <button class="lv-add-btn" style="width:100%; margin:0;" onclick="addPlayerRow()">+ ADD PLAYER</button>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="oq-field">
+      <div class="oq-label">HOW WE COMMUNICATE BETWEEN SESSIONS</div>
+      <input class="oq-input" type="text" placeholder="Discord server, group chat, email...">
+    </div>
+    <div class="oq-field">
+      <div class="oq-label">WHERE WE PLAY</div>
+      <input class="oq-input" type="text" placeholder="Platform, server, location...">
+    </div>
+    <div class="oq-field">
+      <div class="oq-label">SESSION SCHEDULE</div>
+      <input class="oq-input" type="text" placeholder="Day, time, frequency...">
+    </div>
+    <div class="oq-field">
+      <div class="oq-label">SESSION LENGTH</div>
+      <input class="oq-input" type="text" placeholder="Approx. hours per session...">
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════
+     06. CHECK-IN PROTOCOL
+═══════════════════════════════ -->
+<section class="section" id="checkin">
+  <div class="section-head">
+    <span class="sh-num">06 //</span>
+    <span class="sh-title">CHECK-IN PROTOCOL</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="oow-flag">■ OUT OF WORLD — ONGOING USE</div>
+
+  <div class="panel hi mbr">
+    <div class="panel-title hi">HOW WE CHECK IN</div>
+    <p>SPIKE sessions can be emotionally heavy. Brief check-ins before, during, and after play help ensure everyone is genuinely okay — not just performing okay. The goal is to create a table where "I'm not doing great" can be said simply, without drama.</p>
+    <p style="margin-bottom:0;">The check-in is not a debrief, a performance review, or an intervention. It is a brief, low-pressure temperature check. It takes about two minutes and it matters.</p>
+  </div>
+
+  <div class="g2 mbr">
+    <div class="panel">
+      <div class="panel-title">PRE-SESSION // BEFORE WE START</div>
+      <p>A quick round before the session begins. Each person answers one or two questions:</p>
+      <ul>
+        <li>How are you coming in today? (A word or short phrase is fine.)</li>
+        <li>Anything from last session still sitting with you?</li>
+        <li>Any changes to Lines, Veils, or comfort levels to flag?</li>
+      </ul>
+      <p style="margin-bottom:0;" class="dim">This does not need to be deep. "I'm good, let's play" is a valid answer. The point is that the door is open for it not to be.</p>
+    </div>
+    <div class="panel amber">
+      <div class="panel-title amber">POST-SESSION // BEFORE WE LOG OFF</div>
+      <p>A brief round after the session ends. Each person answers:</p>
+      <ul>
+        <li>How are you leaving today?</li>
+        <li>Anything from this session you want to flag for the GM?</li>
+        <li>A rose (something that worked) and/or a thorn (something that didn't)?</li>
+      </ul>
+      <p style="margin-bottom:0;" class="dim">Post-session check-ins also catch things that didn't quite cross the threshold for an in-session X-Card but still landed a bit wrong. Better to name it here than carry it to next session.</p>
+    </div>
+  </div>
+
+  <div class="panel quiet mbr">
+    <div class="panel-title">MID-SESSION SIGNALS</div>
+    <p>If something feels off mid-session but you don't want to fully stop, look for these signals in yourself or others:</p>
+    <ul>
+      <li>Going quiet when you're usually engaged</li>
+      <li>Joking more than usual (deflection is a real signal)</li>
+      <li>Seeming to check out from the fiction</li>
+      <li>Short responses, shorter than normal</li>
+    </ul>
+    <p style="margin-bottom:0;">If you notice these in someone else, a quiet OOW check-in is always appropriate: <em>"Hey — still good?"</em> One question. Easy to answer. Sometimes that's all it takes.</p>
+  </div>
+
+  <!-- NOTES AREA -->
+  <div class="contract-block">
+    <div class="contract-block-header">■ SESSION NOTES // RUNNING LOG</div>
+    <div style="padding: 14px 16px;">
+
+      <div id="sessionNotesContainer"></div>
+
+      <button class="lv-add-btn" style="width:100%; margin:0;" onclick="addSessionNote()">+ ADD SESSION NOTE</button>
+    </div>
+  </div>
+
+  <div class="panel quiet" style="margin-top: 14px;">
+    <div class="panel-title">OPEN QUESTIONS & ONGOING ITEMS</div>
+    <div class="oq-field">
+      <div class="oq-label">THINGS TO REVISIT NEXT SESSION</div>
+      <textarea class="oq-input" placeholder="Content flags, topics to discuss, anything that needs following up..."></textarea>
+    </div>
+    <div class="oq-field" style="margin-bottom:0;">
+      <div class="oq-label">GENERAL TABLE NOTES</div>
+      <textarea class="oq-input" placeholder="Anything that doesn't fit elsewhere..."></textarea>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <span>SPIKE: THE REEVES TRIALS // SAFETY & TABLE CONTRACT</span>
+  <span>■ FOR ALL PARTICIPANTS // OUT OF WORLD ■</span>
+  <span>THE REEVES TRIALS // YEAR 5 POST-RESET</span>
+</footer>
+
+<!-- SAVE TOOLBAR -->
+<div class="save-toolbar">
+  <span class="save-toolbar-label">■ SAFETY DOC</span>
+  <button class="save-btn" onclick="saveToFile()">↓ SAVE JSON</button>
+  <button class="save-btn load-btn" onclick="document.getElementById('loadInput').click()">↑ LOAD JSON</button>
+  <input type="file" id="loadInput" accept=".json" style="display:none" onchange="loadFromFile(event)">
+  <button class="save-btn reset-btn" onclick="resetDoc()">✕ RESET</button>
+  <span class="save-status" id="saveStatus">UNSAVED</span>
+</div>
+
+<script>
+
+// ── LINES & VEILS ─────────────────────────────────────────────────
+let lineCount = 3;
+let veilCount = 3;
+
+function addLVItem(containerId, type) {
+  const container = document.getElementById(containerId);
+  const isLine = type === 'line';
+  if (isLine) lineCount++; else veilCount++;
+  const count = isLine ? lineCount : veilCount;
+  const div = document.createElement('div');
+  div.className = 'lv-item';
+  div.innerHTML = `<span class="lv-item-num">${String(count).padStart(2,'0')}</span><input type="text" placeholder="${isLine ? 'Add a Line...' : 'Add a Veil...'}">`;
+  container.appendChild(div);
+  div.querySelector('input').focus();
+  autoSave();
+}
+
+// ── CONTRACT CHECKBOXES ────────────────────────────────────────────
+function toggleCheck(item) {
+  const check = item.querySelector('.contract-check');
+  const isChecked = check.classList.toggle('checked');
+  item.classList.toggle('checked-item', isChecked);
+  check.textContent = isChecked ? '■' : '■';
+  autoSave();
+}
+
+// ── PLAYER ROWS ───────────────────────────────────────────────────
+function addPlayerRow() {
+  const table = document.getElementById('playerTable');
+  const gmRow = document.getElementById('gmRow');
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td><input type="text" placeholder="Player name"></td>
+    <td><input type="text" placeholder="Operative name"></td>
+    <td><input type="text" placeholder="Field callsign"></td>
+    <td><input type="text" placeholder="Any relevant notes..."></td>`;
+  table.insertBefore(row, gmRow);
+  row.querySelector('input').focus();
+  autoSave();
+}
+
+// ── SESSION NOTES ─────────────────────────────────────────────────
+let sessionCount = 0;
+
+function addSessionNote() {
+  sessionCount++;
+  const container = document.getElementById('sessionNotesContainer');
+  const div = document.createElement('div');
+  div.className = 'oq-field';
+  div.style.marginBottom = '12px';
+  div.innerHTML = `
+    <div class="oq-label">SESSION ${String(sessionCount).padStart(2,'0')} NOTES</div>
+    <textarea class="oq-input" placeholder="Check-in notes, flags, items to follow up..."></textarea>`;
+  container.appendChild(div);
+  div.querySelector('textarea').focus();
+  autoSave();
+}
+
+// ── NAV ACTIVE HIGHLIGHT ──────────────────────────────────────────
+const sections = document.querySelectorAll('.section');
+const navLinks  = document.querySelectorAll('nav a');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+    }
+  });
+}, { threshold: 0.2, rootMargin: '-90px 0px 0px 0px' });
+sections.forEach(s => io.observe(s));
+
+// ── SAVE / LOAD ───────────────────────────────────────────────────
+function gatherState() {
+  const lines = [...document.querySelectorAll('#linesItems input')].map(i => i.value);
+  const veils = [...document.querySelectorAll('#veilsItems input')].map(i => i.value);
+
+  const contractChecks = [...document.querySelectorAll('.contract-check')].map(c => c.classList.contains('checked'));
+
+  const allInputs = [...document.querySelectorAll('input[type=text]:not(#linesItems input):not(#veilsItems input):not(.player-table input)')].map(i => i.value);
+  const playerInputs = [...document.querySelectorAll('.player-table input')].map(i => i.value);
+  const textareas = [...document.querySelectorAll('textarea')].map(t => t.value);
+
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    lines,
+    veils,
+    lineCount,
+    veilCount,
+    contractChecks,
+    allInputs,
+    playerInputs,
+    textareas,
+    sessionCount,
+  };
+}
+
+function applyState(state) {
+  if (!state || state.version !== 1) return;
+
+  // Lines
+  const linesContainer = document.getElementById('linesItems');
+  linesContainer.innerHTML = '';
+  lineCount = state.lineCount || state.lines.length;
+  state.lines.forEach((val, i) => {
+    const div = document.createElement('div');
+    div.className = 'lv-item';
+    div.innerHTML = `<span class="lv-item-num">${String(i+1).padStart(2,'0')}</span><input type="text" placeholder="Add a Line..." value="${escHtml(val)}">`;
+    linesContainer.appendChild(div);
+  });
+
+  // Veils
+  const veilsContainer = document.getElementById('veilsItems');
+  veilsContainer.innerHTML = '';
+  veilCount = state.veilCount || state.veils.length;
+  state.veils.forEach((val, i) => {
+    const div = document.createElement('div');
+    div.className = 'lv-item';
+    div.innerHTML = `<span class="lv-item-num">${String(i+1).padStart(2,'0')}</span><input type="text" placeholder="Add a Veil..." value="${escHtml(val)}">`;
+    veilsContainer.appendChild(div);
+  });
+
+  // Contract checks
+  const checks = document.querySelectorAll('.contract-check');
+  state.contractChecks.forEach((checked, i) => {
+    if (checks[i]) {
+      checks[i].classList.toggle('checked', checked);
+      checks[i].closest('.contract-item').classList.toggle('checked-item', checked);
+    }
+  });
+
+  // Session notes
+  sessionCount = 0;
+  document.getElementById('sessionNotesContainer').innerHTML = '';
+  for (let s = 0; s < (state.sessionCount || 0); s++) addSessionNote();
+
+  // General inputs
+  const allInputEls = [...document.querySelectorAll('input[type=text]:not(#linesItems input):not(#veilsItems input):not(.player-table input)')];
+  state.allInputs.forEach((val, i) => { if (allInputEls[i]) allInputEls[i].value = val; });
+
+  const playerInputEls = [...document.querySelectorAll('.player-table input')];
+  state.playerInputs.forEach((val, i) => { if (playerInputEls[i]) playerInputEls[i].value = val; });
+
+  const taEls = [...document.querySelectorAll('textarea')];
+  state.textareas.forEach((val, i) => { if (taEls[i]) taEls[i].value = val; });
+}
+
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('saveStatus');
+  el.textContent = msg;
+  el.className = 'save-status' + (cls ? ' ' + cls : '');
+}
+
+function saveToFile() {
+  const state = gatherState();
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'SPIKE_Safety_Contract.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  try { localStorage.setItem('spike_safety_autosave', JSON.stringify(state)); } catch(e) {}
+  setStatus('SAVED // ' + new Date().toLocaleTimeString(), 'ok');
+}
+
+function loadFromFile(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      applyState(JSON.parse(e.target.result));
+      setStatus('LOADED // ' + file.name, 'ok');
+    } catch {
+      setStatus('ERROR: INVALID FILE', 'warn');
+    }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+function resetDoc() {
+  if (!confirm('RESET ALL FIELDS? Lines, Veils, contract checks, and notes will be cleared.')) return;
+  document.querySelectorAll('.contract-check').forEach(c => {
+    c.classList.remove('checked');
+    c.closest('.contract-item').classList.remove('checked-item');
+  });
+  document.querySelectorAll('input[type=text], textarea').forEach(el => el.value = '');
+  document.getElementById('linesItems').innerHTML = [1,2,3].map(n => `<div class="lv-item"><span class="lv-item-num">0${n}</span><input type="text" placeholder="Add a Line..."></div>`).join('');
+  document.getElementById('veilsItems').innerHTML = [1,2,3].map(n => `<div class="lv-item"><span class="lv-item-num">0${n}</span><input type="text" placeholder="Add a Veil..."></div>`).join('');
+  lineCount = 3; veilCount = 3;
+  sessionCount = 0;
+  document.getElementById('sessionNotesContainer').innerHTML = '';
+  try { localStorage.removeItem('spike_safety_autosave'); } catch(e) {}
+  setStatus('RESET', 'warn');
+}
+
+function autoSave() {
+  try { localStorage.setItem('spike_safety_autosave', JSON.stringify(gatherState())); } catch(e) {}
+  setStatus('UNSAVED CHANGES', 'warn');
+}
+
+document.addEventListener('input', autoSave);
+document.addEventListener('change', autoSave);
+
+// Restore from localStorage
+try {
+  const saved = localStorage.getItem('spike_safety_autosave');
+  if (saved) {
+    applyState(JSON.parse(saved));
+    setStatus('AUTO-RESTORED // ' + new Date().toLocaleTimeString(), 'ok');
+  }
+} catch(e) {}
+
+</script>
+</body>
+</html>

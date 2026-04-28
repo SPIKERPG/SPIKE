@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPIKE: The Reeves Trials</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:         #0b0c09;
+  --surface:    #111309;
+  --surface2:   #161810;
+  --border:     #232618;
+  --border-hi:  #303520;
+  --text:       #b8baa5;
+  --text-dim:   #626554;
+  --text-hi:    #dfe1cc;
+  --green:      #7a9a28;
+  --green-dim:  #4a5e18;
+  --green-pale: #1a2008;
+  --red:        #8a2020;
+  --red-bright: #c03030;
+  --amber:      #b87820;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent 0, transparent 3px,
+    rgba(0,0,0,.05) 3px, rgba(0,0,0,.05) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.top-band {
+  background: var(--green);
+  padding: 3px 20px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .2em;
+  color: var(--bg);
+  flex-shrink: 0;
+}
+
+.main {
+  flex: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+  width: 100%;
+}
+
+.stamp {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .28em;
+  color: var(--red-bright);
+  border: 1px solid var(--red);
+  padding: 3px 12px;
+  display: inline-block;
+  margin-bottom: 16px;
+  transform: rotate(-.4deg);
+}
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 10vw, 80px);
+  letter-spacing: .12em;
+  color: var(--text-hi);
+  line-height: .95;
+  margin-bottom: 6px;
+}
+
+h1 span { color: var(--green); }
+
+.subtitle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .3em;
+  color: var(--text-dim);
+  margin-bottom: 48px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border-hi);
+  margin: 0 0 40px;
+}
+
+.section-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .22em;
+  color: var(--green);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-hi);
+  margin-bottom: 16px;
+}
+
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 48px;
+}
+
+.doc-card {
+  background: var(--surface2);
+  border: 1px solid var(--border-hi);
+  border-top: 2px solid var(--green-dim);
+  padding: 16px;
+  text-decoration: none;
+  display: block;
+  transition: all .15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.doc-card:hover {
+  border-top-color: var(--green);
+  background: #1a1d11;
+}
+
+.doc-card::after {
+  content: '→';
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--green-dim);
+  transition: color .15s;
+}
+
+.doc-card:hover::after { color: var(--green); }
+
+.card-doc-id {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .18em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: .2em;
+  color: var(--text-hi);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.45;
+  padding-bottom: 20px;
+}
+
+/* Save guide */
+.save-guide {
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-left: 3px solid var(--green-dim);
+  padding: 18px 20px;
+  margin-bottom: 48px;
+}
+
+.save-guide h2 {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .22em;
+  color: var(--green);
+  margin-bottom: 12px;
+}
+
+.save-guide p {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+.save-guide p:last-child { margin-bottom: 0; }
+
+.save-guide strong {
+  color: var(--text-hi);
+  font-weight: 600;
+}
+
+.save-guide code {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  background: rgba(122,154,40,.1);
+  color: var(--green);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+.footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .12em;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .top-band { font-size: 7px; }
+  .doc-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-band">
+  <span>■ UNITED GLOBAL DIRECTORATE ■ CLASSIFIED ■</span>
+  <span>OPERATIVE PORTAL // UGD DIV IV</span>
+  <span>■ YEAR 5 POST-RESET ■</span>
+</div>
+
+<div class="main">
+
+  <div class="stamp">■ CLASSIFIED ■ AUTHORIZED PERSONNEL ONLY ■</div>
+
+  <h1>SPIKE<br><span>THE REEVES TRIALS</span></h1>
+  <div class="subtitle">UGD FIELD OPERATIVE DOCUMENT HUB // INDIANA RECOVERY OPERATION</div>
+
+  <hr class="divider">
+
+  <div class="section-label">OPERATIVE DOCUMENTS</div>
+
+  <div class="doc-grid">
+    <a class="doc-card" href="SPIKE%20Player%20Guide%20-%20The%20Reeves%20Trials.html">
+      <div class="card-doc-id">DOC 02-A // BRIEFING PACKET</div>
+      <div class="card-title">PLAYER'S GUIDE</div>
+      <div class="card-desc">Rules overview, setting lore, mechanics reference, and operative creation guidance.</div>
+    </a>
+    <a class="doc-card" href="SPIKE%20Character%20Sheet%20-%20The%20Reeves%20Trials.html">
+      <div class="card-doc-id">DOC 14-C // FIELD DOSSIER</div>
+      <div class="card-title">OPERATIVE DOSSIER</div>
+      <div class="card-desc">Character sheet — attributes, skills, SPIKE scale, vitals, traits, flaws, and field notes.</div>
+    </a>
+    <a class="doc-card" href="SPIKE%20Field%20Guide%20-%20The%20Reeves%20Trials.html">
+      <div class="card-doc-id">DOC 07-F // FIELD REFERENCE</div>
+      <div class="card-title">FIELD GUIDE</div>
+      <div class="card-desc">In-world reference material — locations, factions, threats, and operational intelligence.</div>
+    </a>
+    <a class="doc-card" href="SPIKE%20Session%200%20-%20The%20Reeves%20Trials.html">
+      <div class="card-doc-id">DOC 00-S // PRE-MISSION</div>
+      <div class="card-title">SESSION 0</div>
+      <div class="card-desc">Session zero materials — safety tools, expectations, character concepts, and table agreements.</div>
+    </a>
+    <a class="doc-card" href="SPIKE%20Safety%20Document%20-%20The%20Reeves%20Trials.html">
+      <div class="card-doc-id">DOC 00-X // TABLE CONTRACT</div>
+      <div class="card-title">SAFETY &amp; TABLE CONTRACT</div>
+      <div class="card-desc">Safety tools, lines and veils, X-card procedures, and table conduct expectations.</div>
+    </a>
+  </div>
+
+  <div class="section-label">HOW TO SAVE YOUR DOSSIER</div>
+
+  <div class="save-guide">
+    <h2>■ SAVING &amp; LOADING YOUR CHARACTER</h2>
+    <p>Your <strong>Operative Dossier</strong> automatically saves your progress in your browser's local storage — so if you reload the page on the same device, your work will be restored.</p>
+    <p>To <strong>save a permanent file</strong> or share your character, click <code>↓ SAVE JSON</code> in the toolbar at the bottom of the character sheet. This downloads a <code>.json</code> file you can keep anywhere.</p>
+    <p>To <strong>load a saved character</strong> on any device or browser, click <code>↑ LOAD JSON</code> and select your saved file. Your full character state — attributes, skills, SPIKE level, HP, and all notes — will be restored instantly.</p>
+    <p>To start fresh, click <code>✕ RESET</code>. You'll be asked to confirm before anything is cleared.</p>
+  </div>
+
+</div>
+
+<div class="footer">
+  <span>UGD // SPIKE: THE REEVES TRIALS // OPERATIVE PORTAL</span>
+  <span>■ CLASSIFIED // AUTHORIZED PERSONNEL ONLY ■</span>
+</div>
+
+</body>
+</html>
