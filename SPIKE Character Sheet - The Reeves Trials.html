@@ -337,39 +337,71 @@ body::after {
   margin-bottom: 8px;
 }
 
-.vital-track {
+.vital-header {
   display: flex;
-  gap: 4px;
-  align-items: center;
-  margin-bottom: 4px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 2px;
 }
 
-.vital-track-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 7px;
-  letter-spacing: .12em;
-  color: var(--text-dim);
-  width: 52px;
-  min-width: 52px;
+.vital-numbers {
+  font-family: 'Bebas Neue', sans-serif;
+  line-height: 1;
+  letter-spacing: .04em;
 }
 
-.vital-boxes {
-  display: flex;
-  gap: 3px;
-  flex-wrap: wrap;
-}
+.vital-cur  { font-size: 30px; color: var(--text-hi); }
+.vital-sep  { font-size: 14px; color: var(--text-dim); margin: 0 2px; }
+.vital-max-num { font-size: 16px; color: var(--text-dim); }
 
-.vbox {
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--border-hi);
+/* ─── RANGE SLIDER ─── */
+.vital-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  outline: none;
   cursor: pointer;
-  transition: all .1s;
+  margin: 10px 0 4px;
+  border: 1px solid var(--border-hi);
+  border-radius: 0;
+  background: linear-gradient(
+    to right,
+    var(--range-fill) 0%,
+    var(--range-fill) var(--fill-pct, 100%),
+    var(--border) var(--fill-pct, 100%),
+    var(--border) 100%
+  );
 }
+.vital-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 22px;
+  background: var(--range-fill);
+  cursor: pointer;
+  border: 2px solid var(--surface2);
+}
+.vital-range::-moz-range-thumb {
+  width: 16px;
+  height: 22px;
+  background: var(--range-fill);
+  cursor: pointer;
+  border: 2px solid var(--surface2);
+  border-radius: 0;
+}
+.hp-range   { --range-fill: var(--green-dim); }
+.comp-range { --range-fill: var(--amber); }
 
-.vbox.hp-fill   { background: var(--green-dim); border-color: var(--green-dim); }
-.vbox.comp-fill { background: var(--amber); border-color: var(--amber); opacity: .7; }
-.vbox:hover     { border-color: var(--green-dim); }
+/* ─── SKILL GROUP LABEL ─── */
+.skill-group-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .22em;
+  color: var(--green-dim);
+  padding: 8px 8px 3px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3px;
+}
 
 /* ─── SKILLS ─── */
 .skills-section { margin-bottom: 18px; }
@@ -801,28 +833,24 @@ body::after {
         <div class="section-label">VITALS</div>
         <div class="vitals-row">
           <div class="vital-box">
-            <div class="vital-name">HP</div>
-            <div class="vital-formula">10 + BODY</div>
-            <div class="vital-track">
-              <div class="vital-track-label">CURRENT</div>
-              <div class="vital-boxes" id="hpBoxes"></div>
+            <div class="vital-header">
+              <div class="vital-name">HP</div>
+              <div class="vital-numbers">
+                <span class="vital-cur" id="hpCur">10</span><span class="vital-sep">/</span><span class="vital-max-num" id="hpMaxDisplay">10</span>
+              </div>
             </div>
-            <div class="vital-track">
-              <div class="vital-track-label">MAX</div>
-              <input class="f-input" type="number" min="10" max="13" placeholder="10" id="hpMax" style="font-size:13px; width:50px;" oninput="updateHP()">
-            </div>
+            <div class="vital-formula" id="hpFormula">10 + BODY (0)</div>
+            <input type="range" class="vital-range hp-range" id="hpRange" min="0" max="10" value="10" oninput="onHPChange()">
           </div>
           <div class="vital-box">
-            <div class="vital-name">COMPOSURE</div>
-            <div class="vital-formula">5 + RESOLVE</div>
-            <div class="vital-track">
-              <div class="vital-track-label">CURRENT</div>
-              <div class="vital-boxes" id="compBoxes"></div>
+            <div class="vital-header">
+              <div class="vital-name">COMPOSURE</div>
+              <div class="vital-numbers">
+                <span class="vital-cur" id="compCur">5</span><span class="vital-sep">/</span><span class="vital-max-num" id="compMaxDisplay">5</span>
+              </div>
             </div>
-            <div class="vital-track">
-              <div class="vital-track-label">MAX</div>
-              <input class="f-input" type="number" min="5" max="9" placeholder="5" id="compMax" style="font-size:13px; width:50px;" oninput="updateComp()">
-            </div>
+            <div class="vital-formula" id="compFormula">5 + RESOLVE (0)</div>
+            <input type="range" class="vital-range comp-range" id="compRange" min="0" max="5" value="5" oninput="onCompChange()">
           </div>
         </div>
 
@@ -1050,46 +1078,66 @@ function setAttr(i, val) {
 }
 
 // ── VITALS ──────────────────────────────────────────────────────
-function buildBoxes(containerId, count, fillClass) {
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
-  for (let b = 0; b < count; b++) {
-    const box = document.createElement('div');
-    box.className = 'vbox';
-    let filled = false;
-    box.onclick = () => {
-      filled = !filled;
-      box.classList.toggle(fillClass, filled);
-    };
-    el.appendChild(box);
-  }
+function getHPMax()   { return 10 + attrVals[0]; }
+function getCompMax() { return 5  + attrVals[4]; }
+
+function onHPChange() {
+  const s = document.getElementById('hpRange');
+  const pct = s.max > 0 ? (s.value / s.max * 100) : 100;
+  s.style.setProperty('--fill-pct', pct + '%');
+  document.getElementById('hpCur').textContent = s.value;
+}
+
+function onCompChange() {
+  const s = document.getElementById('compRange');
+  const pct = s.max > 0 ? (s.value / s.max * 100) : 100;
+  s.style.setProperty('--fill-pct', pct + '%');
+  document.getElementById('compCur').textContent = s.value;
 }
 
 function updateHP() {
-  const bodyVal = attrVals[0];
-  const inputVal = parseInt(document.getElementById('hpMax').value) || (10 + bodyVal);
-  buildBoxes('hpBoxes', Math.max(1, inputVal), 'hp-fill');
+  const max = getHPMax();
+  const s = document.getElementById('hpRange');
+  const prevPct = s.max > 0 ? s.value / s.max : 1;
+  s.max = max;
+  s.value = Math.min(parseInt(s.value) || max, max);
+  // If at full health (pct was 1), keep it at full after max changes
+  if (prevPct >= 1) s.value = max;
+  document.getElementById('hpMaxDisplay').textContent = max;
+  document.getElementById('hpFormula').textContent = `10 + BODY (${attrVals[0]})`;
+  onHPChange();
 }
 
 function updateComp() {
-  const resolveVal = attrVals[4];
-  const inputVal = parseInt(document.getElementById('compMax').value) || (5 + resolveVal);
-  buildBoxes('compBoxes', Math.max(1, inputVal), 'comp-fill');
+  const max = getCompMax();
+  const s = document.getElementById('compRange');
+  const prevPct = s.max > 0 ? s.value / s.max : 1;
+  s.max = max;
+  s.value = Math.min(parseInt(s.value) || max, max);
+  if (prevPct >= 1) s.value = max;
+  document.getElementById('compMaxDisplay').textContent = max;
+  document.getElementById('compFormula').textContent = `5 + RESOLVE (${attrVals[4]})`;
+  onCompChange();
 }
 
 // ── SKILLS ──────────────────────────────────────────────────────
 const SKILLS = [
+  // BODY
   { name: 'Firearms',       attr: 'BODY' },
   { name: 'Close Combat',   attr: 'BODY' },
   { name: 'Mobility',       attr: 'BODY' },
   { name: 'Stealth',        attr: 'BODY' },
-  { name: 'Survival',       attr: 'AWARENESS' },
-  { name: 'Computing',      attr: 'TECH' },
-  { name: 'Engineering',    attr: 'TECH' },
+  // MIND
   { name: 'Medicine',       attr: 'MIND' },
   { name: 'Investigation',  attr: 'MIND' },
-  { name: 'Awareness',      attr: 'AWARENESS' },
   { name: 'Persuasion',     attr: 'MIND' },
+  // TECH
+  { name: 'Computing',      attr: 'TECH' },
+  { name: 'Engineering',    attr: 'TECH' },
+  // AWARENESS
+  { name: 'Awareness',      attr: 'AWARENESS' },
+  { name: 'Survival',       attr: 'AWARENESS' },
+  // RESOLVE
   { name: 'Intimidation',   attr: 'RESOLVE' },
 ];
 
@@ -1098,7 +1146,15 @@ const skillState = new Array(SKILLS.length).fill(0); // 0=untrained, 1=trained, 
 function buildSkills() {
   const list = document.getElementById('skillList');
   list.innerHTML = '';
+  let lastAttr = null;
   SKILLS.forEach((sk, i) => {
+    if (sk.attr !== lastAttr) {
+      const hdr = document.createElement('div');
+      hdr.className = 'skill-group-label';
+      hdr.textContent = '▸ ' + sk.attr;
+      list.appendChild(hdr);
+      lastAttr = sk.attr;
+    }
     const row = document.createElement('div');
     row.className = 'skill-row' + (skillState[i] === 1 ? ' trained' : skillState[i] === 2 ? ' specialized' : '');
     row.innerHTML = `
@@ -1166,29 +1222,28 @@ function switchTab(n) {
 // ── SAVE / LOAD ──────────────────────────────────────────────────
 
 function gatherState() {
-  // Text inputs and number inputs (ordered by DOM position)
   const inputs = [...document.querySelectorAll('input.f-input')].map(el => el.value);
-  // Textareas
   const textareas = [...document.querySelectorAll('textarea.note-area')].map(el => el.value);
-  // HP / Composure box fill states
-  const hpFilled = [...document.querySelectorAll('#hpBoxes .vbox')].map(b => b.classList.contains('hp-fill'));
-  const compFilled = [...document.querySelectorAll('#compBoxes .vbox')].map(b => b.classList.contains('comp-fill'));
+  const hpRange   = document.getElementById('hpRange');
+  const compRange = document.getElementById('compRange');
 
   return {
-    version: 1,
+    version: 2,
     savedAt: new Date().toISOString(),
     attrVals: [...attrVals],
     skillState: [...skillState],
     currentSpike,
     inputs,
     textareas,
-    hpFilled,
-    compFilled,
+    hpCurrent:  parseInt(hpRange.value),
+    hpMax:      parseInt(hpRange.max),
+    compCurrent: parseInt(compRange.value),
+    compMax:    parseInt(compRange.max),
   };
 }
 
 function applyState(state) {
-  if (!state || state.version !== 1) return;
+  if (!state) return;
 
   // Attributes
   state.attrVals.forEach((v, i) => { attrVals[i] = v; });
@@ -1203,21 +1258,28 @@ function applyState(state) {
   currentSpike = state.currentSpike ?? 0;
   buildSpikeTrack();
 
-  // Re-render HP and Composure boxes with correct count, then restore fills
-  buildBoxes('hpBoxes', state.hpFilled.length, 'hp-fill');
-  buildBoxes('compBoxes', state.compFilled.length, 'comp-fill');
-  const hpBoxEls = document.querySelectorAll('#hpBoxes .vbox');
-  state.hpFilled.forEach((filled, i) => { if (filled && hpBoxEls[i]) hpBoxEls[i].classList.add('hp-fill'); });
-  const compBoxEls = document.querySelectorAll('#compBoxes .vbox');
-  state.compFilled.forEach((filled, i) => { if (filled && compBoxEls[i]) compBoxEls[i].classList.add('comp-fill'); });
+  // HP / Composure — support both v2 (numbers) and v1 (filled-box arrays)
+  const hpSlider   = document.getElementById('hpRange');
+  const compSlider = document.getElementById('compRange');
+
+  if (state.version >= 2) {
+    hpSlider.value   = state.hpCurrent  ?? hpSlider.max;
+    compSlider.value = state.compCurrent ?? compSlider.max;
+  } else if (state.hpFilled) {
+    // v1 backward compat: count filled boxes
+    hpSlider.value   = state.hpFilled.filter(Boolean).length;
+    compSlider.value = (state.compFilled || []).filter(Boolean).length;
+  }
+  onHPChange();
+  onCompChange();
 
   // Text inputs
   const inputEls = [...document.querySelectorAll('input.f-input')];
-  state.inputs.forEach((val, i) => { if (inputEls[i]) inputEls[i].value = val; });
+  (state.inputs || []).forEach((val, i) => { if (inputEls[i]) inputEls[i].value = val; });
 
   // Textareas
   const taEls = [...document.querySelectorAll('textarea.note-area')];
-  state.textareas.forEach((val, i) => { if (taEls[i]) taEls[i].value = val; });
+  (state.textareas || []).forEach((val, i) => { if (taEls[i]) taEls[i].value = val; });
 }
 
 function setStatus(msg, cls) {
@@ -1263,8 +1325,11 @@ function resetSheet() {
   skillState.fill(0);
   currentSpike = 0;
   buildAttrs(); buildSkills(); buildSpikeTrack();
-  buildBoxes('hpBoxes', 10, 'hp-fill');
-  buildBoxes('compBoxes', 5, 'comp-fill');
+  updateHP(); updateComp();
+  const hpS = document.getElementById('hpRange');
+  const cS  = document.getElementById('compRange');
+  hpS.value = hpS.max; cS.value = cS.max;
+  onHPChange(); onCompChange();
   document.querySelectorAll('input.f-input').forEach(el => el.value = '');
   document.querySelectorAll('textarea.note-area').forEach(el => el.value = '');
   try { localStorage.removeItem('spike_autosave'); } catch(e) {}
@@ -1281,8 +1346,8 @@ document.addEventListener('input', () => {
 buildAttrs();
 buildSkills();
 buildSpikeTrack();
-buildBoxes('hpBoxes', 10, 'hp-fill');
-buildBoxes('compBoxes', 5, 'comp-fill');
+updateHP();
+updateComp();
 
 // Restore from localStorage if available
 try {
