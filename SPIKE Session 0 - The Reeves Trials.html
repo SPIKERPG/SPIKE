@@ -115,7 +115,7 @@ body::after {
 nav {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 600;
 
   background: var(--surface2);
   border-bottom: 1px solid var(--border);
@@ -965,5 +965,20 @@ footer {
   }, { threshold: 0.2, rootMargin: '-80px 0px 0px 0px' });
   sections.forEach(s => io.observe(s));
 </script>
+
+<script>
+/* ── Sticky nav offset fix ── */
+(function() {
+  function fix() {
+    var header = document.querySelector('.main-header');
+    var nav    = document.querySelector('nav, .nav');
+    if (!nav) return;
+    nav.style.top = header ? header.offsetHeight + 'px' : '0';
+  }
+  document.addEventListener('DOMContentLoaded', fix);
+  window.addEventListener('resize', fix);
+})();
+</script>
+
 </body>
 </html>
