@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPIKE: Running the Game — GM</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+  --bg: #090a07; --surface: #0e0f0b; --surface2: #131408; --surface3: #181a0e;
+  --border: #1e2014; --border-hi: #2a2d1a;
+  --text: #b8baa5; --text-dim: #555748; --text-hi: #dfe1cc;
+  --green: #7a9a28; --green-dim: #4a5e18; --green-pale: #181e06;
+  --red: #8a2020; --red-bright: #c03030;
+  --amber: #b87820; --amber-dim: #6e4810; --amber-pale: #2a1e06;
+  --blue: #4a7a9a; --blue-dim: #1a2a3a;
+  --spike-0: #5a9a5a; --spike-3: #c8b840; --spike-6: #c87820;
+  --spike-8: #d04820; --spike-10: #c03030; --spike-11: #8a0808;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+  line-height: 1.6; min-height: 100vh;
+}
+
+body::after {
+  content: ''; position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(0,0,0,.05) 3px, rgba(0,0,0,.05) 4px);
+  pointer-events: none; z-index: 9000;
+}
+
+.top-band {
+  background: var(--red); padding: 3px 24px;
+  display: flex; justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace; font-size: 8.5px;
+  letter-spacing: .2em; color: #fff;
+}
+
+.main-header {
+  background: var(--surface); border-bottom: 2px solid var(--red);
+  padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 500;
+}
+
+.mh-left, .mh-right {
+  font-family: 'Share Tech Mono', monospace; font-size: 8px;
+  letter-spacing: .16em; color: var(--text-dim); line-height: 1.7;
+}
+
+.mh-center { text-align: center; }
+.mh-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .4em; color: var(--text-hi); }
+.mh-sub { font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: .22em; color: var(--red-bright); margin-top: 3px; }
+
+nav {
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+  display: flex; overflow-x: auto; padding: 0 28px;
+  position: sticky; z-index: 400;
+}
+
+nav a {
+  font-family: 'Share Tech Mono', monospace; font-size: 8.5px; letter-spacing: .14em;
+  color: var(--text-dim); text-decoration: none; padding: 8px 16px;
+  border-right: 1px solid var(--border); white-space: nowrap; transition: all .15s;
+}
+nav a:first-child { border-left: 1px solid var(--border); }
+nav a:hover, nav a.active { color: var(--red-bright); background: rgba(138,32,32,.07); }
+
+main { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+
+.section { margin-bottom: 60px; }
+
+.section-head {
+  display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-hi); padding-bottom: 10px;
+}
+
+.sh-num { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: .2em; color: var(--red-bright); }
+.sh-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: .28em; color: var(--text-hi); }
+.sh-line { flex: 1; height: 1px; background: var(--border); margin-bottom: 3px; }
+
+/* ─── TABLE ─── */
+.ref-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+.ref-table th {
+  font-family: 'Share Tech Mono', monospace; font-size: 7.5px; letter-spacing: .18em;
+  color: var(--text-dim); text-align: left; padding: 6px 10px;
+  border-bottom: 1px solid var(--border-hi); background: var(--surface);
+}
+.ref-table td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table tr:hover td { background: rgba(255,255,255,.015); }
+.td-hi { font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--text-hi); font-weight: bold; }
+
+/* ─── PANEL ─── */
+.panel {
+  background: var(--surface2); border: 1px solid var(--border-hi);
+  border-left: 3px solid var(--green-dim); padding: 16px 18px; margin-bottom: 14px;
+}
+.panel.red { border-left-color: var(--red); }
+.panel.amber { border-left-color: var(--amber-dim); }
+.panel.blue { border-left-color: var(--blue-dim); }
+.panel.quiet { border-left-color: var(--border-hi); background: var(--surface); }
+
+.panel-title {
+  font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: .2em;
+  color: var(--green); margin-bottom: 10px;
+}
+.panel-title.red { color: var(--red-bright); }
+.panel-title.amber { color: var(--amber); }
+.panel-title.blue { color: var(--blue); }
+
+.panel p { font-size: 14px; color: var(--text); line-height: 1.55; margin-bottom: 8px; }
+.panel p:last-child { margin-bottom: 0; }
+.panel strong { color: var(--text-hi); }
+.panel ul { padding-left: 16px; margin-top: 6px; }
+.panel li { font-size: 14px; margin-bottom: 4px; }
+
+/* ─── GRID ─── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.mbr { margin-bottom: 14px; }
+
+/* ─── SPIKE LEVEL ROWS ─── */
+.spike-row-item {
+  display: grid; grid-template-columns: 48px 90px 1fr;
+  gap: 0; margin-bottom: 4px; align-items: stretch;
+}
+.sl-num {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+  color: #fff; font-weight: 400; border-right: 2px solid var(--bg);
+}
+.sl-label {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Share Tech Mono', monospace; font-size: 8px;
+  letter-spacing: .12em; color: var(--bg); font-weight: bold;
+  padding: 4px 6px; text-align: center;
+}
+.sl-body { padding: 8px 10px; font-size: 13px; line-height: 1.45; }
+.sl-mech { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+.s0  { background: var(--spike-0); } .s12 { background: var(--spike-0); }
+.s35 { background: var(--spike-3); } .s67 { background: var(--spike-6); }
+.s89 { background: var(--spike-8); } .s10 { background: var(--spike-10); }
+.s11 { background: var(--spike-11); }
+
+/* ─── BEHAVIOR TABLE ─── */
+.behavior-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 14px;
+}
+.beh-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid var(--red); padding: 8px 10px;
+}
+.beh-num {
+  font-family: 'Share Tech Mono', monospace; font-size: 9px;
+  letter-spacing: .12em; color: var(--red-bright); margin-bottom: 2px;
+}
+.beh-title { font-size: 13px; color: var(--text-hi); font-weight: 600; margin-bottom: 3px; }
+.beh-desc { font-size: 12px; color: var(--text-dim); line-height: 1.4; }
+
+/* ─── MYSTERY BUILDER ─── */
+.mystery-step {
+  display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start;
+}
+.ms-num {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: .1em;
+  color: var(--red-bright); border: 1px solid var(--red); padding: 3px 8px;
+  white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+}
+.ms-body { font-size: 14px; }
+.ms-label { color: var(--text-hi); font-weight: 600; }
+.ms-desc { color: var(--text); font-size: 13px; margin-top: 2px; }
+
+/* ─── ENEMY CARDS ─── */
+.enemy-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.enemy-card { background: var(--surface2); border: 1px solid var(--border-hi); padding: 12px; }
+.enemy-tier { font-family: 'Share Tech Mono', monospace; font-size: 7.5px; letter-spacing: .18em; color: var(--text-dim); margin-bottom: 4px; }
+.enemy-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: .18em; color: var(--text-hi); margin-bottom: 8px; }
+.enemy-stat-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.esr { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); }
+.esr strong { color: var(--text-hi); }
+
+footer {
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 10px 24px; display: flex; justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace; font-size: 7.5px;
+  letter-spacing: .12em; color: var(--text-dim);
+}
+
+@media (max-width: 600px) {
+  .g2, .g3, .behavior-grid, .enemy-grid { grid-template-columns: 1fr; }
+  .spike-row-item { grid-template-columns: 40px 80px 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-band">
+  <span>■ UGD DIV IV // GM COMMAND // RUNNING SPIKE ■</span>
+  <span>GM-02 // OPERATIONS MANUAL</span>
+  <span>■ GM EYES ONLY ■</span>
+</div>
+
+<div class="main-header">
+  <div class="mh-left">UGD // DIVISION IV<br>GM COMMAND CHANNEL</div>
+  <div class="mh-center">
+    <div class="mh-title">RUNNING SPIKE</div>
+    <div class="mh-sub">■ TN REFERENCE // MYSTERY FRAMEWORK // ENCOUNTER TOOLS ■</div>
+  </div>
+  <div class="mh-right">YEAR 5 POST-RESET<br>INDIANA OPERATION</div>
+</div>
+
+<nav>
+  <a href="#tn">TARGET NUMBERS</a>
+  <a href="#spike">SPIKE SYSTEM</a>
+  <a href="#behavior">BEHAVIOR TABLE</a>
+  <a href="#combat">COMBAT</a>
+  <a href="#enemies">ENEMIES</a>
+  <a href="#mystery">MYSTERY</a>
+  <a href="#session">SESSION TOOLS</a>
+</nav>
+
+<main>
+
+<!-- ════ 01. TARGET NUMBERS ════ -->
+<section class="section" id="tn">
+  <div class="section-head">
+    <span class="sh-num">01 //</span>
+    <span class="sh-title">TARGET NUMBERS</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="g2 mbr">
+    <div>
+      <table class="ref-table">
+        <thead><tr><th>DIFFICULTY</th><th>TN</th><th>WHEN TO USE</th></tr></thead>
+        <tbody>
+          <tr><td>Routine</td><td class="td-hi">7</td><td>Under no pressure, relevant skill, clear environment</td></tr>
+          <tr><td>Standard</td><td class="td-hi">9</td><td>Default for most field actions and combat attacks</td></tr>
+          <tr><td>Challenging</td><td class="td-hi">11</td><td>Time pressure, partial obstruction, unfamiliar situation</td></tr>
+          <tr><td>Hard</td><td class="td-hi">13</td><td>Heavy cover, active interference, significant stakes</td></tr>
+          <tr><td>Very Hard</td><td class="td-hi">15</td><td>Expert-level barrier, hostile environment, life-or-death</td></tr>
+          <tr><td>Near-Impossible</td><td class="td-hi">17</td><td>Reserved for exceptional circumstances</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <table class="ref-table">
+        <thead><tr><th>SPECIFIC ROLL</th><th>TN</th></tr></thead>
+        <tbody>
+          <tr><td>Combat attack (standard)</td><td class="td-hi">9</td></tr>
+          <tr><td>Attack (cover)</td><td class="td-hi">11</td></tr>
+          <tr><td>Attack (heavy cover)</td><td class="td-hi">13</td></tr>
+          <tr><td>SPIKE Save at SPIKED (10)</td><td class="td-hi">17</td></tr>
+          <tr><td>SPIKE Save at CONSUMED (11)</td><td class="td-hi">19</td></tr>
+          <tr><td>COMPOSURE = 0 SPIKE Save</td><td class="td-hi">14</td></tr>
+          <tr><td>Lower SPIKE (action, d20+MIND)</td><td class="td-hi">13</td></tr>
+          <tr><td>Grounding (d20+MIND vs SPIKED)</td><td class="td-hi">14</td></tr>
+          <tr><td>Resist flaw (d10+RESOLVE)</td><td class="td-hi">11</td></tr>
+          <tr><td>Breaking Point Roll (d10+RESOLVE)</td><td class="td-hi">12</td></tr>
+          <tr><td>Awoken assist vs SPIKED (d10+EMP)</td><td class="td-hi">11</td></tr>
+          <tr><td>Awoken SPIKE reduction (d20+EMP)</td><td class="td-hi">16</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel quiet">
+    <div class="panel-title">GM CALIBRATION NOTES</div>
+    <p><strong>When in doubt, use TN 9.</strong> Raise it when environment, opposition, or consequence warrants — not because the moment feels important. Importance is a story tool, not a TN modifier.</p>
+    <p>Advantage = roll 2 dice, take higher. Disadvantage = roll 2 dice, take lower. Nat 10 (d10) = +2 damage OR narrative bonus. Nat 1 = complication, not automatic failure.</p>
+    <p style="margin-bottom:0">SPIKE-related rolls (saves, recovery, assistance) always use the <strong>d20</strong>. All controlled actions use the <strong>d10</strong>.</p>
+  </div>
+</section>
+
+<!-- ════ 02. SPIKE SYSTEM ════ -->
+<section class="section" id="spike">
+  <div class="section-head">
+    <span class="sh-num">02 //</span>
+    <span class="sh-title">SPIKE SYSTEM</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="spike-row-item mbr">
+    <div class="sl-num s0" style="background:var(--spike-0)">0</div>
+    <div class="sl-label s0" style="background:var(--spike-0)">SERENE</div>
+    <div class="sl-body">Baseline. No mechanical effect.</div>
+  </div>
+  <div class="spike-row-item mbr">
+    <div class="sl-num s12" style="background:var(--spike-0)">1–2</div>
+    <div class="sl-label s12" style="background:var(--spike-0)">STABLE</div>
+    <div class="sl-body">Functioning. No penalties. Roleplay opportunity only.</div>
+  </div>
+  <div class="spike-row-item mbr">
+    <div class="sl-num s35" style="background:var(--spike-3)">3–5</div>
+    <div class="sl-label s35" style="background:var(--spike-3)">SHAKEN</div>
+    <div class="sl-body"><strong style="color:var(--text-hi)">–1 to MIND checks.</strong> Cracks beginning to show. Memory flashbacks are possible as GM tool.</div>
+  </div>
+  <div class="spike-row-item mbr">
+    <div class="sl-num s67" style="background:var(--spike-6)">6–7</div>
+    <div class="sl-label s67" style="background:var(--spike-6)">CRACKED</div>
+    <div class="sl-body"><strong style="color:var(--text-hi)">–1 MIND and –1 RESOLVE.</strong> Hallucinations possible — prompt Saving Throw. SPIKE Resonance triggers if difference with another PC is ≥4.</div>
+  </div>
+  <div class="spike-row-item mbr">
+    <div class="sl-num s89" style="background:var(--spike-8)">8–9</div>
+    <div class="sl-label s89" style="background:var(--spike-8)">OVERLOADED</div>
+    <div class="sl-body"><strong style="color:var(--text-hi)">Disadvantage on all social rolls.</strong> Player must roleplay as unreasonable or non-compliant. Emotional Flaws are harder to resist.</div>
+  </div>
+  <div class="spike-row-item mbr">
+    <div class="sl-num s10" style="background:var(--spike-10)">10</div>
+    <div class="sl-label s10" style="background:var(--spike-10)">SPIKED</div>
+    <div class="sl-body"><strong style="color:var(--text-hi)">Loss of character control.</strong> Roll d20 vs Behavior Table at start of turn. At end of each turn: d20+RESOLVE vs TN 17. Nat 20 = SPIKE –2. Nat 1 = SPIKE +1.</div>
+  </div>
+  <div class="spike-row-item" style="margin-bottom:24px">
+    <div class="sl-num s11" style="background:var(--spike-11)">11</div>
+    <div class="sl-label s11" style="background:var(--spike-11)">CONSUMED</div>
+    <div class="sl-body"><strong style="color:var(--text-hi)">1d6 True Damage at start of each turn</strong> until 0 HP, then 1d4 RESOLVE damage per turn. Death follows. End-of-turn save: d20+RESOLVE vs TN 19. Nat 1 = damage advantage.</div>
+  </div>
+
+  <div class="g3">
+    <div class="panel">
+      <div class="panel-title">LOWERING SPIKE</div>
+      <ul>
+        <li><strong>Short Rest:</strong> –1 SPIKE</li>
+        <li><strong>Long Rest:</strong> –2 SPIKE</li>
+        <li><strong>Action (once/encounter):</strong> d20+MIND vs TN 13. Advantage if helped by PC at SPIKE ≤4.</li>
+      </ul>
+    </div>
+    <div class="panel amber">
+      <div class="panel-title amber">SPIKE RESONANCE</div>
+      <p>When two characters' SPIKE levels differ by <strong>≥4</strong>, social scenes become unstable. Apply tension, misread cues, or prompt saves as needed.</p>
+    </div>
+    <div class="panel red">
+      <div class="panel-title red">BREAKING POINT (DR onwards)</div>
+      <p>At SPIKE 10 for the 2nd+ time: d10+RESOLVE vs TN 12. <strong>Success:</strong> AWOKEN, SPIKE drops to 4. <strong>Failure:</strong> SPIKE = 9, gain Emotional Flaw. Cannot retry until flaw is addressed.</p>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="panel-title">NON-AWAKENED GROUNDING</div>
+      <p>Takes an action. Requires roleplay. Roll d20+MIND vs TN 14.</p>
+      <ul>
+        <li><strong>Success:</strong> SPIKED PC gains Advantage on next SPIKE save</li>
+        <li><strong>Failure:</strong> SPIKED PC lashes out — 1d4 damage to helper</li>
+        <li><strong>Critical Failure:</strong> Both make RESOLVE save vs TN 12. SPIKED PC gets Disadvantage on next save.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="panel-title">AWAKENED GROUNDING</div>
+      <p>Roll d20+EMPATHY vs TN 16.</p>
+      <ul>
+        <li><strong>Success:</strong> Target SPIKE –1</li>
+        <li><strong>Critical Success:</strong> +1d4 to reduction; Awoken PC's EMPATHY +1</li>
+        <li><strong>Failure:</strong> No effect</li>
+        <li><strong>Critical Failure:</strong> Awoken PC gains +1d4 SPIKE</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 03. BEHAVIOR TABLE ════ -->
+<section class="section" id="behavior">
+  <div class="section-head">
+    <span class="sh-num">03 //</span>
+    <span class="sh-title">SPIKED BEHAVIOR TABLE</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="panel red mbr">
+    <div class="panel-title red">USAGE</div>
+    <p>When a PC reaches SPIKE 10, they roll d20 at the <strong>start</strong> of their turn. The result determines their action. <em>How</em> they fulfill it is the player's roleplay. The result is tragic, not villainous.</p>
+  </div>
+
+  <div class="behavior-grid">
+    <div class="beh-item">
+      <div class="beh-num">1 — SHATTER POINT</div>
+      <div class="beh-title">SPIKE Save immediately</div>
+      <div class="beh-desc">Success: act normally. Failure: +1 SPIKE (risks CONSUMED).</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">2 — EMOTIONAL BLEED</div>
+      <div class="beh-title">Instability radiates outward</div>
+      <div class="beh-desc">All CLOSE allies: SPIKE Save vs TN 14 or +1 SPIKE. –1 to all your rolls this turn.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">3 — MISPLACED TRUST</div>
+      <div class="beh-title">Latches onto nearest creature</div>
+      <div class="beh-desc">Treats them as ally regardless of reality. If they harm you this turn: +1 SPIKE.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">4 — VIOLENT OUTBURST</div>
+      <div class="beh-title">Attack nearest creature</div>
+      <div class="beh-desc">Must use full Action. If no target in range → move toward nearest.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">5 — PARANOID BREAK</div>
+      <div class="beh-title">Everyone is a threat</div>
+      <div class="beh-desc">Treat all others as hostile until end of turn. Cannot benefit from Assist.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">6 — PANIC RESPONSE</div>
+      <div class="beh-title">Must flee</div>
+      <div class="beh-desc">Use movement to flee perceived danger. Take cover if possible. Cannot move toward enemies.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">7 — RECKLESS ADVANCE</div>
+      <div class="beh-title">Surge forward, no regard for safety</div>
+      <div class="beh-desc">Must move toward nearest threat. Advantage on next attack. All attacks against you have Advantage.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">8 — DISASSOCIATION</div>
+      <div class="beh-title">Detach from reality</div>
+      <div class="beh-desc">–2 to all rolls this turn. Cannot take Reactions.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">9 — FREEZE</div>
+      <div class="beh-title">Immobilized by overload</div>
+      <div class="beh-desc">Lose Action. May still take Minor Action.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">10 — COLLAPSE</div>
+      <div class="beh-title">Body gives out</div>
+      <div class="beh-desc">Fall prone. Lose Action. Minor Action only. Gain +1 COMPOSURE at end of turn.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">11 — SENSORY OVERLOAD</div>
+      <div class="beh-title">Environment becomes unbearable</div>
+      <div class="beh-desc">Disadvantage on all rolls. Must reposition away from stimuli. If unable to move: –2 to all rolls.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">12 — ERRATIC ACTION</div>
+      <div class="beh-title">Act but roll 1d10 first</div>
+      <div class="beh-desc">1–3: target wrong creature. 4–6: drop/mishandle item. 7–10: act normally.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">13 — ECHO LOOP</div>
+      <div class="beh-title">Repeat last meaningful action</div>
+      <div class="beh-desc">Attack same target / repeat movement / retry skill. If impossible: lose Action.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">14 — TARGET LOCK</div>
+      <div class="beh-title">Obsessed with single enemy</div>
+      <div class="beh-desc">Advantage vs chosen target. Disadvantage vs all others. Must pursue.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">15 — COMPULSIVE FIXATION</div>
+      <div class="beh-title">GM assigns a fixation</div>
+      <div class="beh-desc">Object, enemy, or task. Must focus on it this turn. +1 to related actions.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">16 — EMOTIONAL SURGE</div>
+      <div class="beh-title">+2 to attack roll</div>
+      <div class="beh-desc">If the attack fails: +1 SPIKE.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">17 — CONTROL SNAP</div>
+      <div class="beh-title">Violently resist losing control</div>
+      <div class="beh-desc">SPIKE Save. Success: act normally. Failure: +1 SPIKE, –2 all rolls.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">18 — HYPER-FOCUS</div>
+      <div class="beh-title">Fixate on one actionable goal</div>
+      <div class="beh-desc">GM defines task. +2 to related rolls. Cannot take unrelated actions.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">19 — MOMENT OF CLARITY</div>
+      <div class="beh-title">Act normally</div>
+      <div class="beh-desc">SPIKE reduces by 1.</div>
+    </div>
+    <div class="beh-item">
+      <div class="beh-num">20 — FRACTURED CLARITY</div>
+      <div class="beh-title">Brief painful awareness</div>
+      <div class="beh-desc">Advantage on all rolls this turn. SPIKE –1 for one turn, then resets.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 04. COMBAT ════ -->
+<section class="section" id="combat">
+  <div class="section-head">
+    <span class="sh-num">04 //</span>
+    <span class="sh-title">COMBAT REFERENCE</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="g2 mbr">
+    <div class="panel">
+      <div class="panel-title">TURN STRUCTURE</div>
+      <ul>
+        <li><strong>Initiative:</strong> d10 + AWARENESS</li>
+        <li><strong>Each Turn:</strong> 1 Action + 1 Minor Action</li>
+        <li><strong>Attack:</strong> d10 + Attribute + Skill vs TN</li>
+        <li><strong>Movement:</strong> 1 zone as Minor Action; 2 zones as Minor (–1 COMPOSURE) or full turn (no penalty)</li>
+        <li><strong>Zones:</strong> CLOSE / NEAR / FAR / OUT OF REACH</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="panel-title">REACTIONS (2 per operative / long rest)</div>
+      <ul>
+        <li><strong>Overwatch:</strong> If Aimed last turn — shoot enemy entering line of sight</li>
+        <li><strong>Counterattack:</strong> If attacked in melee — immediate return strike</li>
+        <li><strong>Protect:</strong> Take a hit for adjacent ally</li>
+        <li><strong>Brace:</strong> Reduce incoming damage by 2</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="panel">
+      <div class="panel-title">WEAPONS</div>
+      <ul>
+        <li><strong>Light</strong> (pistol, knife): 1d10</li>
+        <li><strong>Standard</strong> (rifle, shotgun): 2d10</li>
+        <li><strong>Heavy</strong> (sniper, LMG): 3d10 — cannot move and attack</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="panel-title">ARMOR</div>
+      <ul>
+        <li><strong>Light:</strong> –2 damage, no penalty</li>
+        <li><strong>Medium:</strong> –4 damage, –1 Mobility</li>
+        <li><strong>Heavy:</strong> –6 damage, –1 Mobility, extended move costs +1 COMPOSURE</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="panel-title">HEALTH</div>
+      <ul>
+        <li><strong>HP:</strong> 10 + BODY</li>
+        <li><strong>COMPOSURE:</strong> 5 + RESOLVE</li>
+        <li><strong>COMPOSURE = 1:</strong> –1 to BODY checks</li>
+        <li><strong>COMPOSURE = 0:</strong> SPIKE Save vs TN 14, –1 to all rolls</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 05. ENEMIES ════ -->
+<section class="section" id="enemies">
+  <div class="section-head">
+    <span class="sh-num">05 //</span>
+    <span class="sh-title">ENEMY REFERENCE</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="enemy-grid mbr">
+    <div class="enemy-card">
+      <div class="enemy-tier">TIER 1 // MINION</div>
+      <div class="enemy-name">WEAK ENEMY</div>
+      <div class="enemy-stat-row">
+        <span class="esr">HP: <strong>5–8</strong></span>
+        <span class="esr">ATK: <strong>+2</strong></span>
+        <span class="esr">DMG: <strong>1d10</strong></span>
+        <span class="esr">DEF TN: <strong>9</strong></span>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim)">Used in groups. Goes down quickly. 0–1 trait.</div>
+    </div>
+    <div class="enemy-card">
+      <div class="enemy-tier">TIER 2 // STANDARD</div>
+      <div class="enemy-name">STANDARD ENEMY</div>
+      <div class="enemy-stat-row">
+        <span class="esr">HP: <strong>10–15</strong></span>
+        <span class="esr">ATK: <strong>+3</strong></span>
+        <span class="esr">DMG: <strong>2d10</strong></span>
+        <span class="esr">DEF TN: <strong>9–11</strong></span>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim)">Solid field presence. Balanced. 1 trait.</div>
+    </div>
+    <div class="enemy-card">
+      <div class="enemy-tier">TIER 3 // ELITE</div>
+      <div class="enemy-name">ELITE ENEMY</div>
+      <div class="enemy-stat-row">
+        <span class="esr">HP: <strong>18–25</strong></span>
+        <span class="esr">ATK: <strong>+4</strong></span>
+        <span class="esr">DMG: <strong>2d10–3d10</strong></span>
+        <span class="esr">DEF TN: <strong>11–13</strong></span>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim)">1 unique ability/trait. Creates identity, not complexity.</div>
+    </div>
+    <div class="enemy-card">
+      <div class="enemy-tier">TIER 4 // BOSS</div>
+      <div class="enemy-name">BOSS ENEMY</div>
+      <div class="enemy-stat-row">
+        <span class="esr">HP: <strong>30+</strong></span>
+        <span class="esr">ATK: <strong>+5</strong></span>
+        <span class="esr">DMG: <strong>3d10</strong></span>
+        <span class="esr">DEF TN: <strong>11–13</strong></span>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim)">2 traits. May act multiple times per round (GM discretion).</div>
+    </div>
+  </div>
+
+  <div class="g2 mbr">
+    <div class="panel">
+      <div class="panel-title">ENEMY TRAITS (0–1; bosses get 2)</div>
+      <table class="ref-table">
+        <thead><tr><th>TRAIT</th><th>EFFECT</th></tr></thead>
+        <tbody>
+          <tr><td>Aggressive</td><td>+1 damage at CLOSE range</td></tr>
+          <tr><td>Suppressive</td><td>On hit, target –1 to next roll</td></tr>
+          <tr><td>Durable</td><td>–2 to all incoming damage</td></tr>
+          <tr><td>Unstable</td><td>On hit, target +1 SPIKE</td></tr>
+          <tr><td>Hunter</td><td>Advantage vs isolated targets</td></tr>
+          <tr><td>Swarm</td><td>+1 attack per adjacent ally</td></tr>
+          <tr><td>Phase Shift</td><td>Once/encounter: ignore damage from one attack</td></tr>
+          <tr><td>Resonant</td><td>CLOSE PCs must SPIKE Save at turn start</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-title">ENCOUNTER BUILDING</div>
+      <table class="ref-table">
+        <thead><tr><th>DIFFICULTY</th><th>COMPOSITION</th></tr></thead>
+        <tbody>
+          <tr><td>Easy</td><td>2–3 Weak</td></tr>
+          <tr><td>Standard</td><td>1 Standard + 2 Weak</td></tr>
+          <tr><td>Hard</td><td>2 Standard OR 1 Elite</td></tr>
+          <tr><td>Boss</td><td>1 Boss + 2–4 Weak</td></tr>
+        </tbody>
+      </table>
+      <div class="panel quiet" style="margin-top:10px;margin-bottom:0">
+        <div class="panel-title">FAST BUILD</div>
+        <p style="margin-bottom:0">Pick a role → Assign HP → Give 1 trait → Done in 10 seconds. When in doubt: attack roll + damage.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">SPIKE PRESSURE ENEMIES</div>
+    <p>Some enemies should attack SPIKE instead of HP. On hit: +1 SPIKE. Aura: SPIKE Save each turn. Death effect: nearby PCs +1 SPIKE. Most enemies do <em>not</em> use COMPOSURE — reserve it for Awoken enemies, psychological threats, and bosses. COMPOSURE 5–10; at 0, enemy becomes erratic or escalates.</p>
+    <p style="margin-bottom:0"><strong>Play enemies thematically, not optimally.</strong> Keep turns under 10 seconds. Traits create identity. If you forget a rule, default to: attack roll + damage.</p>
+  </div>
+</section>
+
+<!-- ════ 06. MYSTERY BUILDER ════ -->
+<section class="section" id="mystery">
+  <div class="section-head">
+    <span class="sh-num">06 //</span>
+    <span class="sh-title">MYSTERY BUILDER</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="panel red mbr">
+    <div class="panel-title red">CORE PRINCIPLE</div>
+    <p>The mystery is built to be <strong>solved</strong> — but only if the details are tracked. Information is currency. Every clue should raise a question before it answers one. Threads connect slowly. The picture that emerges may not be the expected one.</p>
+  </div>
+
+  <div style="margin-bottom:24px">
+    <div class="mystery-step">
+      <div class="ms-num">STEP 01</div>
+      <div class="ms-body">
+        <div class="ms-label">ESTABLISH THE TRUTH</div>
+        <div class="ms-desc">Know what actually happened before you begin. Write it in one sentence. The players are not discovering your plot — they are uncovering reality. The difference matters.</div>
+      </div>
+    </div>
+    <div class="mystery-step">
+      <div class="ms-num">STEP 02</div>
+      <div class="ms-body">
+        <div class="ms-label">LAYER CLUES IN THREES</div>
+        <div class="ms-desc">Every key piece of information should be discoverable via at least three separate paths (objects, people, environments). If one is missed, the others remain. Never hide the only copy of critical information.</div>
+      </div>
+    </div>
+    <div class="mystery-step">
+      <div class="ms-num">STEP 03</div>
+      <div class="ms-body">
+        <div class="ms-label">LET CLUES RAISE QUESTIONS FIRST</div>
+        <div class="ms-desc">A clue that immediately explains something is information. A clue that creates more questions first — and then explains — is a <em>discovery</em>. Design for the second. The strangeness is information.</div>
+      </div>
+    </div>
+    <div class="mystery-step">
+      <div class="ms-num">STEP 04</div>
+      <div class="ms-body">
+        <div class="ms-label">CONTROL THE INFORMATION RATE</div>
+        <div class="ms-desc">One revelation per session maximum. Space revelations with accumulation — small, disconnected details that suddenly click. If players are connecting dots faster than expected: add complications, not more clues.</div>
+      </div>
+    </div>
+    <div class="mystery-step">
+      <div class="ms-num">STEP 05</div>
+      <div class="ms-body">
+        <div class="ms-label">BUILD CONSEQUENCES, NOT OUTCOMES</div>
+        <div class="ms-desc">Don't plan what the players will discover. Plan what exists and what it means. Let the players create the outcome through their choices. If they miss a clue: the world reacts. If they find one early: escalate.</div>
+      </div>
+    </div>
+    <div class="mystery-step">
+      <div class="ms-num">STEP 06</div>
+      <div class="ms-body">
+        <div class="ms-label">MAKE COST VISIBLE IN PEOPLE</div>
+        <div class="ms-desc">Show consequences in NPCs, behavior, and environments — not systems. A stable world should feel emotionally hollow. A harsh world should feel brutally alive but unjust. Exposition is a last resort.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel amber">
+      <div class="panel-title amber">CLUE TYPES (USE ALL THREE)</div>
+      <ul>
+        <li><strong>Physical:</strong> Objects, documents, physical evidence in the environment</li>
+        <li><strong>Testimonial:</strong> What NPCs say, imply, contradict, or refuse to say</li>
+        <li><strong>Behavioral:</strong> How the world acts, what is absent, what is wrong in ways that can't be spoken</li>
+      </ul>
+    </div>
+    <div class="panel quiet">
+      <div class="panel-title">WHEN PLAYERS ARE STUCK</div>
+      <ul>
+        <li>Have an NPC notice what they missed</li>
+        <li>Let the environment change — escalate the situation</li>
+        <li>Introduce a complication that redirects, not resolves</li>
+        <li>Ask them: "What does your character <em>feel</em> is wrong here?" — let the SPIKE system carry it</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 07. SESSION TOOLS ════ -->
+<section class="section" id="session">
+  <div class="section-head">
+    <span class="sh-num">07 //</span>
+    <span class="sh-title">SESSION TOOLS</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="g2 mbr">
+    <div class="panel">
+      <div class="panel-title">SESSION OPEN CHECKLIST</div>
+      <ul>
+        <li>Recap last session — let players drive</li>
+        <li>Check in on open questions from last time</li>
+        <li>Confirm current SPIKE levels and HP</li>
+        <li>Identify any unresolved Emotional Flaws</li>
+        <li>Have one scene ready — don't plan the session, plan the situation</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="panel-title">SESSION CLOSE CHECKLIST</div>
+      <ul>
+        <li>Note what each player <em>did</em> — not what happened to them</li>
+        <li>Record any SPIKE changes, flaw triggers, and trait applications</li>
+        <li>Identify the next dangling thread to pull</li>
+        <li>Check in out-of-character if the session was heavy</li>
+        <li>Update party tracker if characters were modified</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel amber mbr">
+    <div class="panel-title amber">ADVANCEMENT — AFTER EACH MILESTONE</div>
+    <p>Players choose <strong>one</strong> of:</p>
+    <ul>
+      <li>Gain 1 new Skill</li>
+      <li>Upgrade a Skill from +2 to +3 (Specialized)</li>
+      <li>Gain a Trait (max 6 per character, not stackable)</li>
+      <li>Increase max COMPOSURE by +1</li>
+      <li>Reduce a permanent Emotional Flaw (rare — requires meaningful narrative resolution)</li>
+    </ul>
+    <p style="margin-bottom:0;margin-top:8px">Milestones are <em>narrative</em> beats, not experience points. A milestone is reached when the party understands something new about the world, makes a meaningful decision, or passes a point of no return.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel quiet">
+      <div class="panel-title">EMOTIONAL FLAW IN PLAY</div>
+      <p>When a flaw triggers: <em>"This hits your flaw — how do you react?"</em></p>
+      <ul>
+        <li><strong>Lean In:</strong> Act according to flaw → +1 to roll OR +1 COMPOSURE</li>
+        <li><strong>Resist:</strong> d10+RESOLVE vs TN 11 → Fail: –1 roll OR +1 SPIKE</li>
+      </ul>
+      <p style="margin-bottom:0">If a player consistently ignores a flaw: increase SPIKE or apply Disadvantage.</p>
+    </div>
+    <div class="panel quiet">
+      <div class="panel-title">X-CARD PROTOCOL</div>
+      <p>Any player (including GM) may tap or hold up the X-card at any time. No explanation required. The scene shifts, fades, or cuts immediately.</p>
+      <p style="margin-bottom:0">Lines and Veils established in Session 0 are binding. The X-card overrides everything. This is always in effect.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>UGD // SPIKE: THE REEVES TRIALS // RUNNING SPIKE</span>
+  <span>■ GM EYES ONLY // CLEARANCE ALPHA ■</span>
+</footer>
+
+<script>
+// Nav active state
+const sections = document.querySelectorAll('.section');
+const links = document.querySelectorAll('nav a');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+    }
+  });
+}, { threshold: 0.15, rootMargin: '-80px 0px 0px 0px' });
+sections.forEach(s => io.observe(s));
+
+// Fix sticky nav offset
+(function() {
+  function fix() {
+    const header = document.querySelector('.main-header');
+    const nav = document.querySelector('nav');
+    if (!nav) return;
+    nav.style.top = header ? header.offsetHeight + 'px' : '0';
+  }
+  document.addEventListener('DOMContentLoaded', fix);
+  window.addEventListener('resize', fix);
+})();
+</script>
+</body>
+</html>

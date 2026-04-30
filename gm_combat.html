@@ -1,0 +1,2607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPIKE: Combat Suite — GM</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:         #0b0c09;
+  --surface:    #111309;
+  --surface2:   #161810;
+  --surface3:   #1c1f13;
+  --border:     #232618;
+  --border-hi:  #303520;
+  --text:       #b8baa5;
+  --text-dim:   #606352;
+  --text-hi:    #dfe1cc;
+  --green:      #7a9a28;
+  --green-dim:  #4a5e18;
+  --green-pale: #1a2008;
+  --red:        #8a2020;
+  --red-bright: #c03030;
+  --amber:      #b87820;
+  --amber-dim:  #6e4810;
+  --blue:       #2878a0;
+  --blue-dim:   #1a4060;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(0,0,0,.045) 3px, rgba(0,0,0,.045) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── TOP BAND ── */
+.top-band {
+  background: var(--red);
+  padding: 3px 16px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .2em;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--red);
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.header-left {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .18em;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.header-center { text-align: center; }
+.header-center h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: .4em;
+  color: var(--text-hi);
+  line-height: 1;
+}
+.header-center .hsub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .22em;
+  color: var(--red-bright);
+}
+.header-right {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .18em;
+  color: var(--text-dim);
+  text-align: right;
+  line-height: 1.7;
+}
+
+/* ── NAV ── */
+.nav {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav-tab {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  padding: 11px 18px;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .12s, background .12s;
+  user-select: none;
+  border: none;
+  background: none;
+}
+.nav-tab:first-child { border-left: 1px solid var(--border); }
+.nav-tab:hover { color: var(--text); background: rgba(255,255,255,.02); }
+.nav-tab.active { color: var(--red-bright); background: rgba(138,32,32,.08); border-bottom: 2px solid var(--red); }
+.nav-spacer { flex: 1; }
+.nav-status {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  padding: 0 12px;
+  white-space: nowrap;
+}
+.nav-status strong { color: var(--amber); }
+.nav-status.active-enc strong { color: var(--red-bright); }
+
+/* ── LAYOUT ── */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── PAGES ── */
+.page { display: none; flex: 1; overflow-y: auto; padding: 24px 28px 56px; }
+.page.active { display: block; }
+
+/* ── SECTION HEADER ── */
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-hi);
+}
+.sec-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .2em;
+  color: var(--red-bright);
+}
+.sec-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: .2em;
+  color: var(--text-hi);
+}
+.sec-line { flex: 1; height: 1px; background: var(--border); }
+.sec-count {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+}
+
+/* ── PANELS ── */
+.panel {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+.panel.red   { border-left-color: var(--red-bright); }
+.panel.amber { border-left-color: var(--amber-dim); }
+.panel.hi    { border-left-color: var(--red-bright); }
+.panel.blue  { border-left-color: var(--blue-dim); }
+.panel-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .22em;
+  color: var(--red-bright);
+  margin-bottom: 10px;
+}
+.panel-label.red   { color: var(--red-bright); }
+.panel-label.amber { color: var(--amber); }
+
+/* ── GRIDS ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* ── FORMS ── */
+.f-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .18em;
+  color: var(--text-dim);
+  display: block;
+  margin-bottom: 3px;
+}
+.f-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  color: var(--text-hi);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  padding: 6px 9px;
+  outline: none;
+  transition: border-color .12s;
+}
+.f-input:focus { border-color: var(--red); }
+.f-input.mono { font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+.f-input.sm { padding: 4px 7px; font-size: 13px; }
+.f-row { margin-bottom: 13px; }
+.f-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 9px; }
+.f-group3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 9px; }
+.f-group5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin-bottom: 9px; }
+select.f-input { appearance: none; cursor: pointer; }
+
+/* ── TYPE TOGGLE ── */
+.type-toggle { display: flex; gap: 0; margin-bottom: 10px; }
+.type-btn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .14em;
+  padding: 7px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .12s;
+}
+.type-btn.active-operative { background: rgba(122,154,40,.18); border-color: var(--green-dim); color: var(--green); }
+.type-btn.active-hostile   { background: rgba(138,32,32,.22); border-color: var(--red); color: var(--red-bright); }
+
+.btn {
+  background: var(--surface3);
+  border: 1px solid var(--border-hi);
+  color: var(--text-hi);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .14em;
+  padding: 9px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .12s;
+}
+.btn:hover { border-color: var(--red); color: var(--red-bright); }
+.btn.green { border-color: var(--green-dim); color: var(--green); }
+.btn.green:hover { background: rgba(122,154,40,.15); border-color: var(--green); }
+.btn.red { border-color: var(--red); color: var(--red-bright); }
+.btn.red:hover { background: rgba(138,32,32,.15); }
+.btn.amber { border-color: var(--amber-dim); color: var(--amber); }
+.btn.amber:hover { background: rgba(184,120,32,.12); border-color: var(--amber); }
+.btn.blue { border-color: var(--blue-dim); color: #5ab0e0; }
+.btn.blue:hover { background: rgba(40,120,160,.12); }
+.btn.sm { padding: 5px 11px; font-size: 8px; }
+.btn.lg { padding: 11px 22px; font-size: 10px; }
+.btn.full { width: 100%; text-align: center; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+
+/* ══════════════════════════════════════
+   INITIATIVE TRACKER
+══════════════════════════════════════ */
+
+/* Turn banner */
+.turn-banner {
+  background: rgba(122,154,40,.07);
+  border: 1px solid var(--green-dim);
+  border-left: 5px solid var(--green);
+  padding: 16px 22px;
+  margin-bottom: 18px;
+  display: none;
+}
+.turn-banner.visible { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.turn-banner-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: .2em;
+  color: var(--text-hi);
+  line-height: 1;
+}
+.turn-banner-meta {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.turn-banner-meta strong { color: var(--text-hi); }
+.turn-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .18em;
+  background: var(--green-dim);
+  color: var(--bg);
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+/* Init row */
+.init-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.init-row {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-hi);
+  display: grid;
+  grid-template-columns: 36px 18px 1fr auto auto auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 18px;
+  transition: border-color .15s, background .15s;
+  position: relative;
+}
+.init-row.operative { border-left-color: var(--green-dim); }
+.init-row.hostile   { border-left-color: var(--red); }
+.init-row.party-import { border-left-color: var(--blue-dim); }
+.init-row.current-turn { border-left-color: var(--green); background: rgba(122,154,40,.05); }
+.init-row.current-turn.hostile { border-left-color: var(--red-bright); background: rgba(138,32,32,.06); }
+.init-row.dead { opacity: .4; }
+
+/* Drag handle */
+.drag-handle {
+  width: 36px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--border-hi);
+  cursor: grab;
+  font-size: 20px;
+  user-select: none;
+  transition: color .1s;
+  letter-spacing: -3px;
+}
+.drag-handle:hover { color: var(--text-dim); }
+.init-row.dragging { opacity: .25; }
+.init-row.drag-over {
+  border-color: var(--red-bright) !important;
+  box-shadow: inset 0 2px 0 0 var(--red-bright);
+}
+
+.turn-marker {
+  font-size: 12px;
+  color: var(--green);
+  text-align: center;
+  width: 18px;
+}
+.init-info { min-width: 0; }
+.init-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: .12em;
+  color: var(--text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.init-meta {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .12em;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Vitals block */
+.init-vitals { display: flex; gap: 14px; }
+.init-vital { text-align: center; min-width: 48px; }
+.init-vital-lbl {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 6.5px;
+  letter-spacing: .18em;
+  color: var(--text-dim);
+}
+.init-vital-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--text-hi);
+  line-height: 1.1;
+}
+.vital-bar-wrap { width: 48px; height: 3px; background: var(--border); margin: 2px 0; }
+.vital-bar { height: 100%; transition: width .25s, background .25s; }
+.init-vital-steppers { display: flex; gap: 2px; justify-content: center; margin-top: 2px; }
+
+/* SPIKE pip row */
+.spike-cell { min-width: 90px; }
+.spike-lbl {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 6.5px;
+  letter-spacing: .18em;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+.spike-pips { display: flex; gap: 2px; flex-wrap: wrap; }
+.spike-pip {
+  width: 9px; height: 9px;
+  border: 1px solid var(--border-hi);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background .1s;
+  flex-shrink: 0;
+}
+.spike-val-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+  margin-top: 2px;
+}
+
+/* Step buttons */
+.step-btn {
+  width: 20px; height: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .1s;
+  font-family: monospace;
+}
+.step-btn:hover { border-color: var(--red); color: var(--red-bright); }
+.step-btn.up:hover { border-color: var(--red); color: var(--red-bright); }
+.step-btn.red:hover { border-color: var(--red); color: var(--red-bright); }
+
+/* Status tag */
+.status-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .14em;
+  padding: 2px 7px;
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .1s;
+}
+.status-tag.alive { border-color: var(--green-dim); color: var(--green); }
+.status-tag.down  { border-color: var(--amber-dim); color: var(--amber); }
+.status-tag.dead  { border-color: var(--red); color: var(--red-bright); }
+
+/* Conditions */
+.init-conditions { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+.cond-chip {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 6.5px;
+  letter-spacing: .1em;
+  padding: 2px 6px;
+  background: rgba(184,120,32,.1);
+  border: 1px solid var(--amber-dim);
+  color: var(--amber);
+  cursor: pointer;
+}
+.cond-chip:hover { background: rgba(138,32,32,.2); border-color: var(--red); color: var(--red-bright); }
+.cond-add {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  line-height: 1;
+}
+.cond-add:hover { color: var(--red-bright); border-color: var(--red); }
+
+/* Reaction tracker */
+.reaction-bar {
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  padding: 12px 18px;
+  margin-bottom: 14px;
+}
+.reaction-bar-head {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .2em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.reaction-bar-head strong { color: var(--text-hi); }
+.reaction-roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.reaction-op {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+}
+.reaction-op-name {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .1em;
+  color: var(--text-dim);
+  white-space: nowrap;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.reaction-pips { display: flex; gap: 4px; }
+.reaction-pip {
+  width: 14px; height: 14px;
+  border: 1px solid var(--green-dim);
+  background: rgba(122,154,40,.25);
+  cursor: pointer;
+  transition: all .1s;
+  flex-shrink: 0;
+}
+.reaction-pip.used {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.reaction-op-reset {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .1em;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  line-height: 1;
+  white-space: nowrap;
+}
+.reaction-op-reset:hover { color: var(--green); border-color: var(--green-dim); }
+.reaction-empty {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  font-style: italic;
+}
+.reaction-type {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .12em;
+  color: var(--text-dim);
+}
+
+/* Init empty */
+.init-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-dim);
+  border: 1px dashed var(--border-hi);
+}
+.init-empty-icon {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: var(--border-hi);
+}
+.init-empty-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .14em;
+}
+
+/* Encounter controls */
+.enc-controls {
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  padding: 14px 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.enc-stat {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  padding: 0 14px;
+  border-right: 1px solid var(--border);
+}
+.enc-stat:last-of-type { border-right: none; }
+.enc-stat strong { color: var(--amber); font-size: 16px; font-family: 'Bebas Neue'; letter-spacing: .1em; }
+
+/* ADD FORM */
+.add-form-wrap {
+  margin-bottom: 18px;
+}
+.add-form-toggle {
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-left: 3px solid var(--red);
+  padding: 11px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: background .12s;
+}
+.add-form-toggle:hover { background: var(--surface2); }
+.add-form-toggle-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .22em;
+  color: var(--red-bright);
+}
+.add-form-toggle-icon {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  transition: transform .15s;
+}
+.add-form-body {
+  background: var(--surface2);
+  border: 1px solid var(--border-hi);
+  border-top: none;
+  border-left: 3px solid var(--red);
+  padding: 20px 20px 16px;
+  display: none;
+}
+.add-form-body.open { display: block; }
+
+/* Import from tracker strip */
+.tracker-strip {
+  background: var(--surface);
+  border: 1px solid var(--blue-dim);
+  border-left: 3px solid var(--blue-dim);
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+.tracker-strip-head {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .2em;
+  color: #5ab0e0;
+  margin-bottom: 8px;
+}
+.tracker-op-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.tracker-op-btn {
+  background: var(--surface2);
+  border: 1px solid var(--blue-dim);
+  color: #5ab0e0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .1em;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all .12s;
+}
+.tracker-op-btn:hover { background: rgba(40,120,160,.15); border-color: var(--blue); }
+.tracker-op-btn.loaded { border-color: var(--green-dim); color: var(--green); background: rgba(122,154,40,.08); }
+
+/* ══════════════════════════════════════
+   HOSTILE ROSTER
+══════════════════════════════════════ */
+.hostile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 10px; }
+.hostile-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--red);
+}
+.hostile-card-header {
+  background: rgba(138,32,32,.12);
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.hostile-card-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: .14em;
+  color: var(--text-hi);
+}
+.hostile-card-body { padding: 10px 12px; }
+.hostile-stat-row { display: flex; gap: 4px; margin-bottom: 8px; }
+.hostile-stat {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 5px 4px;
+  text-align: center;
+}
+.hostile-stat-lbl { font-family: 'Share Tech Mono', monospace; font-size: 6px; color: var(--text-dim); letter-spacing: .12em; }
+.hostile-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--text-hi); line-height: 1; }
+.hostile-vitals { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; margin-bottom: 8px; }
+.hostile-vital { background: var(--surface); border: 1px solid var(--border); padding: 5px; text-align: center; }
+.hostile-vital-lbl { font-family: 'Share Tech Mono', monospace; font-size: 6px; color: var(--text-dim); letter-spacing: .12em; }
+.hostile-vital-val { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--text-hi); line-height: 1.1; }
+.hostile-attacks { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 6px; }
+.attack-entry {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.attack-entry:last-child { border-bottom: none; }
+.attack-name { flex: 1; color: var(--text-hi); font-weight: 600; }
+.attack-dice { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--amber); }
+.attack-build-row { display: grid; grid-template-columns: 2fr 1fr 0.7fr 32px; gap: 6px; align-items: end; margin-bottom: 6px; }
+
+/* ══════════════════════════════════════
+   DICE ROLLER
+══════════════════════════════════════ */
+.roller-layout { display: grid; grid-template-columns: 340px 1fr; gap: 14px; }
+
+/* Die buttons */
+.die-rack { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 12px; }
+.die-btn {
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: .14em;
+  padding: 10px 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .12s;
+  position: relative;
+}
+.die-btn:hover { border-color: var(--red); color: var(--text-hi); background: var(--surface2); }
+.die-btn.selected { border-color: var(--red-bright); color: var(--red-bright); background: rgba(138,32,32,.1); }
+.die-btn .die-label { font-family: 'Share Tech Mono', monospace; font-size: 7px; letter-spacing: .1em; display: block; color: inherit; margin-top: -4px; }
+
+/* Core dice call-outs — d10 and d20 are the main ones */
+.die-btn[data-die="10"] { border-color: var(--red); }
+.die-btn[data-die="20"] { border-color: var(--amber-dim); }
+
+/* Quick rolls */
+.quick-rack { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 12px; }
+.quick-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .1em;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all .12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.quick-btn:hover { border-color: var(--amber-dim); color: var(--amber); background: var(--surface2); }
+.quick-btn.d10 { border-left: 2px solid var(--green-dim); }
+.quick-btn.d20 { border-left: 2px solid var(--amber-dim); }
+.quick-btn.dmg { border-left: 2px solid var(--red); }
+
+/* Log */
+.result-log { display: flex; flex-direction: column; gap: 6px; }
+.result-empty {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  padding: 30px;
+  text-align: center;
+  border: 1px dashed var(--border);
+}
+.result-entry {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+.result-dice-expr { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--amber); letter-spacing: .1em; }
+.result-timestamp { font-family: 'Share Tech Mono', monospace; font-size: 7px; color: var(--text-dim); margin-top: 2px; }
+.result-label { font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: .1em; color: var(--text-dim); margin-bottom: 4px; }
+.result-rolls { display: flex; gap: 3px; flex-wrap: wrap; }
+.roll-individual {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  min-width: 22px;
+  height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-hi);
+  line-height: 1;
+}
+.roll-individual.max { background: rgba(122,154,40,.18); border-color: var(--green); color: var(--green); }
+.roll-individual.min { background: rgba(138,32,32,.18); border-color: var(--red); color: var(--red-bright); }
+.result-total-wrap { text-align: center; }
+.result-total {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  line-height: 1;
+  color: var(--text-hi);
+}
+.result-total.success { color: var(--green); }
+.result-total.fail    { color: var(--red-bright); }
+.result-vs-tn { font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: .1em; margin-top: 2px; }
+.result-vs-tn.success { color: var(--green); }
+.result-vs-tn.fail    { color: var(--red-bright); }
+
+/* ══════════════════════════════════════
+   MODALS
+══════════════════════════════════════ */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--surface2);
+  border: 1px solid var(--border-hi);
+  border-top: 2px solid var(--red);
+  padding: 20px 22px;
+  min-width: 300px;
+  max-width: 420px;
+  width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: .2em;
+  color: var(--text-hi);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-hi);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-close {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+}
+.modal-close:hover { color: var(--red-bright); border-color: var(--red); }
+.modal-btns { display: flex; gap: 8px; margin-top: 14px; }
+
+/* Condition presets */
+.cond-presets { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.cond-preset {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .12em;
+  padding: 5px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all .1s;
+}
+.cond-preset:hover { border-color: var(--amber-dim); color: var(--amber); }
+
+/* ── LIVE SYNC ── */
+.sync-pill {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .16em;
+  padding: 3px 10px;
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  white-space: nowrap;
+  transition: border-color .4s, color .4s, background .4s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+}
+.sync-pill::before {
+  content: '◉';
+  font-size: 8px;
+  color: var(--border-hi);
+  transition: color .4s;
+}
+.sync-pill.live { border-color: var(--green-dim); color: var(--green); }
+.sync-pill.live::before { color: var(--green); }
+.sync-pill.pulse { border-color: var(--amber); color: var(--amber); background: rgba(184,120,32,.08); }
+.sync-pill.pulse::before { color: var(--amber); }
+
+@keyframes combat-sync-flash {
+  0%   { outline: 2px solid rgba(122,154,40,.7); background: rgba(122,154,40,.08); }
+  100% { outline: 2px solid transparent;         background: transparent; }
+}
+.sync-flash { animation: combat-sync-flash .7s ease-out forwards; }
+
+
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 7px 18px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .12em;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .roller-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .g2, .g3 { grid-template-columns: 1fr; }
+  .init-row { grid-template-columns: 36px 16px 1fr; grid-template-rows: auto auto auto; }
+  .init-vitals, .spike-cell, .init-conditions, .init-status-cell, .init-actions { grid-column: 1/-1; }
+  .header-left, .header-right { display: none; }
+}
+
+/* SPIKE color helpers (inline via JS) */
+</style>
+</head>
+<body>
+
+<div class="top-band">
+  <span>■ UGD DIV IV // GM COMMAND // COMBAT SUITE ■</span>
+  <span>GM-05 // TACTICAL OPERATIONS</span>
+  <span>■ GM EYES ONLY ■</span>
+</div>
+
+<div class="header">
+  <div class="header-left">GM-05 // REV.02<br>CLEARANCE ALPHA</div>
+  <div class="header-center">
+    <h1>COMBAT SUITE</h1>
+    <div class="hsub">■ INITIATIVE // HOSTILES // DICE // PARTY SYNC ■</div>
+  </div>
+  <div class="header-right">YEAR 5 POST-RESET<br>INDIANA OPERATION</div>
+</div>
+
+<nav class="nav">
+  <button class="nav-tab active" onclick="switchPage('initiative')" id="ntab-initiative">◈ INITIATIVE</button>
+  <button class="nav-tab" onclick="switchPage('hostiles')" id="ntab-hostiles">◉ HOSTILES</button>
+  <button class="nav-tab" onclick="switchPage('roller')" id="ntab-roller">⬡ DICE ROLLER</button>
+  <div class="nav-spacer"></div>
+  <div class="nav-status" id="nav-status">ROUND <strong id="nav-round">—</strong> &nbsp;|&nbsp; TURN <strong id="nav-turn">—</strong></div>
+  <div class="sync-pill" id="sync-pill-combat">NO TRACKER LINK</div>
+</nav>
+
+<div class="app-body">
+
+<!-- ════════════════════════════════════════
+     INITIATIVE PAGE
+════════════════════════════════════════ -->
+<div class="page active" id="page-initiative">
+
+  <!-- Encounter controls -->
+  <div class="enc-controls">
+    <div class="enc-stat">ROUND <strong id="round-display">—</strong></div>
+    <div class="enc-stat">ACTIVE <strong id="turn-display">—</strong></div>
+
+    <button class="btn green lg" id="btn-start" onclick="startEncounter()">▶ START ENCOUNTER</button>
+    <button class="btn amber lg" id="btn-next" style="display:none" onclick="nextTurn()">▶▶ NEXT TURN</button>
+    <button class="btn sm" onclick="sortInit(true)" title="Re-sort by initiative">↕ SORT</button>
+    <button class="btn sm" onclick="rollAllInit()" title="Roll d10+AWARENESS for all">⬡ ROLL ALL INIT</button>
+    <button class="btn sm red" onclick="clearEncounter()">✕ CLEAR ALL</button>
+  </div>
+
+  <!-- Reaction tracker -->
+  <div class="reaction-bar" id="reaction-bar">
+    <div class="reaction-bar-head">
+      ■ REACTIONS PER OPERATIVE — <strong>2 / LONG REST</strong>
+      &nbsp;·&nbsp;
+      <span class="reaction-type">Overwatch · Counterattack · Protect · Brace</span>
+      &nbsp;·&nbsp;
+      <button class="btn sm" onclick="resetAllReactions()" title="Reset all operative reactions (long rest)">↺ LONG REST — RESET ALL</button>
+    </div>
+    <div class="reaction-roster" id="reaction-roster">
+      <span class="reaction-empty">No operatives in tracker.</span>
+    </div>
+  </div>
+
+  <!-- Turn banner -->
+  <div class="turn-banner" id="turn-banner">
+    <div>
+      <div class="turn-banner-name" id="turn-banner-name">—</div>
+      <div class="turn-banner-meta" id="turn-banner-meta"></div>
+    </div>
+    <div class="turn-badge" id="turn-badge">▶ ACTIVE TURN</div>
+    <button class="btn amber" onclick="nextTurn()">▶▶ NEXT TURN</button>
+  </div>
+
+  <!-- Import from party tracker -->
+  <div class="tracker-strip" id="tracker-strip">
+    <div class="tracker-strip-head">■ PARTY TRACKER SYNC // CLICK AN OPERATIVE TO IMPORT TO INITIATIVE</div>
+    <div class="tracker-op-grid" id="tracker-op-grid">
+      <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);">No operatives found in Party Tracker. Open gm_party_tracker.html on the same device first.</span>
+    </div>
+  </div>
+
+  <!-- Add combatant form -->
+  <div class="add-form-wrap">
+    <div class="add-form-toggle" onclick="toggleAddForm()" id="add-form-toggle">
+      <span class="add-form-toggle-label">■ ADD COMBATANT</span>
+      <span class="add-form-toggle-icon" id="add-form-icon">▼</span>
+    </div>
+    <div class="add-form-body open" id="add-form-body">
+      <div class="type-toggle">
+        <button class="type-btn active-operative" id="tbtn-operative" onclick="setType('operative')">OPERATIVE</button>
+        <button class="type-btn" id="tbtn-hostile" onclick="setType('hostile')">HOSTILE</button>
+      </div>
+      <div class="f-group3">
+        <div class="f-row">
+          <label class="f-label">NAME / DESIGNATION</label>
+          <input class="f-input" id="add-name" placeholder="e.g. Declan Rice" autocomplete="off">
+        </div>
+        <div class="f-row">
+          <label class="f-label">INITIATIVE ROLL</label>
+          <div style="display:flex;gap:5px">
+            <input class="f-input mono" id="add-init" type="number" placeholder="0" style="flex:1">
+            <button class="btn sm green" onclick="rollInitFor()" title="Auto-roll d10 + AWARENESS">⬡ ROLL</button>
+          </div>
+        </div>
+        <div class="f-row">
+          <label class="f-label">AWARENESS (init bonus)</label>
+          <input class="f-input mono" id="add-initbonus" type="number" placeholder="0" value="0">
+        </div>
+      </div>
+      <div class="f-group3">
+        <div class="f-row">
+          <label class="f-label">HP</label>
+          <input class="f-input mono" id="add-hp" type="number" placeholder="13">
+        </div>
+        <div class="f-row">
+          <label class="f-label">HP MAX</label>
+          <input class="f-input mono" id="add-hpmax" type="number" placeholder="13">
+        </div>
+        <div class="f-row">
+          <label class="f-label">ARMOR REDUCTION</label>
+          <input class="f-input mono" id="add-armor" type="number" placeholder="0">
+        </div>
+      </div>
+      <div class="f-group">
+        <div class="f-row">
+          <label class="f-label">COMPOSURE</label>
+          <input class="f-input mono" id="add-comp" type="number" placeholder="7">
+        </div>
+        <div class="f-row">
+          <label class="f-label">COMP MAX</label>
+          <input class="f-input mono" id="add-compmax" type="number" placeholder="7">
+        </div>
+      </div>
+      <button class="btn green full" onclick="addCombatant()">+ ADD TO TRACKER</button>
+    </div>
+  </div>
+
+  <!-- Initiative list -->
+  <div class="sec-head" style="margin-top:4px">
+    <span class="sec-num">// TRACKER</span>
+    <span class="sec-title">INITIATIVE ORDER</span>
+    <span class="sec-line"></span>
+    <span class="sec-count" id="combatant-count">// 0 COMBATANTS</span>
+  </div>
+
+  <div class="init-list" id="init-list">
+    <div class="init-empty">
+      <div class="init-empty-icon">[ ]</div>
+      <div class="init-empty-text">NO COMBATANTS // ADD OPERATIVES OR HOSTILES TO BEGIN</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     HOSTILES PAGE
+════════════════════════════════════════ -->
+<div class="page" id="page-hostiles">
+
+  <div class="sec-head" style="margin-bottom:14px">
+    <span class="sec-num">// H-BLOC</span>
+    <span class="sec-title">HOSTILE STAT BUILDER</span>
+    <span class="sec-line"></span>
+  </div>
+
+  <div class="g2">
+    <!-- Builder form -->
+    <div>
+      <div class="panel">
+        <div class="panel-label red">■ HOSTILE DESIGNATION</div>
+        <div class="f-row"><label class="f-label">NAME</label><input class="f-input" id="h-name" placeholder="e.g. Facility Guard"></div>
+        <div class="f-row"><label class="f-label">CATEGORY / TIER</label><input class="f-input" id="h-tier" placeholder="e.g. STANDARD THREAT / TIER 2"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">■ ATTRIBUTES</div>
+        <div class="f-group5">
+          <div><label class="f-label">BODY</label><input class="f-input mono sm" id="h-body" type="number" value="1" min="0" max="5"></div>
+          <div><label class="f-label">MIND</label><input class="f-input mono sm" id="h-mind" type="number" value="1" min="0" max="5"></div>
+          <div><label class="f-label">TECH</label><input class="f-input mono sm" id="h-tech" type="number" value="1" min="0" max="5"></div>
+          <div><label class="f-label">AWARE</label><input class="f-input mono sm" id="h-aware" type="number" value="1" min="0" max="5"></div>
+          <div><label class="f-label">RESOLVE</label><input class="f-input mono sm" id="h-resolve" type="number" value="1" min="0" max="5"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">■ VITALS</div>
+        <div class="f-group3">
+          <div><label class="f-label">HP</label><input class="f-input mono sm" id="h-hp" type="number" value="10"></div>
+          <div><label class="f-label">COMPOSURE</label><input class="f-input mono sm" id="h-comp" type="number" value="5"></div>
+          <div><label class="f-label">ARMOR</label><input class="f-input mono sm" id="h-armor" type="number" value="0"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">■ ATTACKS</div>
+        <div id="attacks-builder">
+          <div class="attack-build-row">
+            <div><label class="f-label">NAME</label><input class="f-input sm" placeholder="e.g. Service Pistol"></div>
+            <div><label class="f-label">DAMAGE</label><input class="f-input sm mono" placeholder="1d10"></div>
+            <div><label class="f-label">BONUS</label><input class="f-input sm mono" placeholder="+1"></div>
+            <div style="align-self:flex-end"><button class="btn sm red" onclick="removeAtkRow(this)">✕</button></div>
+          </div>
+        </div>
+        <button class="btn sm" onclick="addAtkRow()" style="margin-top:5px">+ ATTACK</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">■ GM NOTES / SPECIAL ABILITIES</div>
+        <textarea class="f-input" id="h-notes" rows="3" placeholder="Special abilities, triggers, lore..." style="resize:vertical"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn green lg" onclick="saveHostile()">+ SAVE TO ROSTER</button>
+        <button class="btn sm" onclick="clearHostileForm()">CLEAR FORM</button>
+        <button class="btn amber" onclick="deployHostile()">⬡ DEPLOY ALL TO INIT</button>
+      </div>
+    </div>
+
+    <!-- Roster -->
+    <div>
+      <div class="sec-head">
+        <span class="sec-num">// ROSTER</span>
+        <span class="sec-title">SAVED HOSTILES</span>
+        <span class="sec-line"></span>
+        <span class="sec-count" id="hostile-count">// 0 SAVED</span>
+      </div>
+      <div class="hostile-grid" id="hostile-grid">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:8.5px;color:var(--text-dim);padding:20px;border:1px dashed var(--border)">
+          No hostiles saved. Build a stat block and save it.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     DICE ROLLER PAGE
+════════════════════════════════════════ -->
+<div class="page" id="page-roller">
+
+  <div class="roller-layout">
+    <!-- Left: controls -->
+    <div>
+      <div class="sec-head" style="margin-bottom:12px">
+        <span class="sec-num">// DIE</span>
+        <span class="sec-title">DICE ROLLER</span>
+        <span class="sec-line"></span>
+      </div>
+
+      <div class="panel hi">
+        <div class="panel-label">■ SELECT DIE TYPE</div>
+        <div class="die-rack">
+          <button class="die-btn" data-die="4"  onclick="selectDie(4)">D4<span class="die-label">DAMAGE</span></button>
+          <button class="die-btn" data-die="6"  onclick="selectDie(6)">D6<span class="die-label">TRUE DMG</span></button>
+          <button class="die-btn selected" data-die="10" onclick="selectDie(10)">D10<span class="die-label">★ CORE</span></button>
+          <button class="die-btn" data-die="20" onclick="selectDie(20)">D20<span class="die-label">★ SPIKE</span></button>
+          <button class="die-btn" data-die="8"  onclick="selectDie(8)">D8<span class="die-label">—</span></button>
+          <button class="die-btn" data-die="12" onclick="selectDie(12)">D12<span class="die-label">—</span></button>
+          <button class="die-btn" data-die="100" onclick="selectDie(100)">D100<span class="die-label">—</span></button>
+          <button class="die-btn" data-die="2"  onclick="selectDie(2)">D2<span class="die-label">—</span></button>
+        </div>
+
+        <div class="f-group3" style="margin-bottom:8px">
+          <div><label class="f-label">COUNT</label><input class="f-input mono" id="r-count" type="number" value="1" min="1" max="20"></div>
+          <div><label class="f-label">SIDES</label><input class="f-input mono" id="r-sides" type="number" value="10" min="2"></div>
+          <div><label class="f-label">MODIFIER (+/−)</label><input class="f-input mono" id="r-mod" type="number" value="0"></div>
+        </div>
+        <div class="f-group" style="margin-bottom:8px">
+          <div>
+            <label class="f-label">MODE</label>
+            <select class="f-input" id="r-mode">
+              <option value="normal">Normal</option>
+              <option value="advantage">Advantage (take high)</option>
+              <option value="disadvantage">Disadvantage (take low)</option>
+            </select>
+          </div>
+          <div><label class="f-label">TARGET NUMBER (0 = skip)</label><input class="f-input mono" id="r-tn" type="number" value="0" min="0"></div>
+        </div>
+        <div class="f-row" style="margin-bottom:8px">
+          <label class="f-label">ROLL LABEL</label>
+          <input class="f-input" id="r-label" placeholder="e.g. Investigation check">
+        </div>
+        <button class="btn green full lg" onclick="rollDice()">⬡ ROLL</button>
+      </div>
+
+      <!-- Attack panel -->
+      <div class="panel amber" style="margin-top:0">
+        <div class="panel-label amber">■ ATTACK ROLL (d10 system)</div>
+        <div class="f-group" style="margin-bottom:6px">
+          <div><label class="f-label">ATTACK LABEL</label><input class="f-input sm" id="atk-label" placeholder="e.g. Guard — Service Pistol"></div>
+          <div><label class="f-label">BONUS (attr+skill)</label><input class="f-input mono sm" id="atk-bonus" type="number" value="0"></div>
+        </div>
+        <div class="f-group3" style="margin-bottom:8px">
+          <div><label class="f-label">DAMAGE DICE</label><input class="f-input mono sm" id="atk-dmg" value="1d10"></div>
+          <div><label class="f-label">DMG MOD</label><input class="f-input mono sm" id="atk-dmgmod" type="number" value="0"></div>
+          <div><label class="f-label">TARGET TN (0=skip)</label><input class="f-input mono sm" id="atk-tn" type="number" value="9"></div>
+        </div>
+        <div class="btn-row" style="margin-bottom:0">
+          <button class="btn amber full" onclick="rollAttack()">⬡ ATTACK ROLL (d10)</button>
+          <button class="btn red full" onclick="rollDamage()">💥 DAMAGE</button>
+        </div>
+      </div>
+
+      <!-- Quick rolls -->
+      <div class="panel">
+        <div class="panel-label">■ QUICK ROLLS</div>
+        <div class="quick-rack">
+          <button class="quick-btn d10" onclick="quickRoll('Initiative','1d10',0,0)">Init — 1d10 + AWR</button>
+          <button class="quick-btn d10" onclick="quickRoll('Core Action','1d10',0,9)">Core Roll — TN 9</button>
+          <button class="quick-btn d10" onclick="quickRoll('Core Action (Difficult)','1d10',0,11)">Core Roll — TN 11</button>
+          <button class="quick-btn d10" onclick="quickRoll('Core (Extreme)','1d10',0,13)">Core Roll — TN 13</button>
+          <button class="quick-btn d20" onclick="quickRoll('SPIKE Save (Shaken)','1d20',0,9)">SPIKE Save TN 9</button>
+          <button class="quick-btn d20" onclick="quickRoll('SPIKE Save (Composure 0)','1d20',0,14)">SPIKE Save TN 14</button>
+          <button class="quick-btn d20" onclick="quickRoll('SPIKE Save (Spiked)','1d20',0,17)">SPIKE Save TN 17</button>
+          <button class="quick-btn d20" onclick="quickRoll('SPIKE Save (Consumed)','1d20',0,19)">SPIKE Save TN 19</button>
+          <button class="quick-btn d20" onclick="quickRoll('Behavior Table','1d20',0,0)">Behavior Table — d20</button>
+          <button class="quick-btn d20" onclick="quickRoll('Grounding','1d20',0,13)">Grounding TN 13</button>
+          <button class="quick-btn d20" onclick="quickRoll('Assist Spiked','1d20',0,14)">Assist SPIKED TN 14</button>
+          <button class="quick-btn d20" onclick="quickRoll('Flaw Resist','1d10',0,11)">Flaw Resist TN 11</button>
+          <button class="quick-btn dmg" onclick="quickRoll('True Damage','1d6',0,0)">1d6 True Damage</button>
+          <button class="quick-btn dmg" onclick="quickRoll('Light Weapon','1d10',0,0)">1d10 Light Wpn</button>
+          <button class="quick-btn dmg" onclick="quickRoll('Standard Weapon','2d10',0,0)">2d10 Standard Wpn</button>
+          <button class="quick-btn dmg" onclick="quickRoll('Heavy Weapon','3d10',0,0)">3d10 Heavy Wpn</button>
+          <button class="quick-btn dmg" onclick="quickRoll('Lash Out','1d4',0,0)">1d4 Lash Out</button>
+          <button class="quick-btn dmg" onclick="quickRoll('True Damage x2','2d6',0,0)">2d6 True Damage</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: log -->
+    <div>
+      <div class="sec-head" style="margin-bottom:12px">
+        <span class="sec-num">// LOG</span>
+        <span class="sec-title">ROLL LOG</span>
+        <span class="sec-line"></span>
+        <button class="btn sm red" onclick="clearLog()">✕ CLEAR</button>
+      </div>
+      <div class="result-log" id="result-log">
+        <div class="result-empty">NO ROLLS YET // SELECT DICE AND ROLL</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end app-body -->
+
+<!-- ════════════════════════════════════════
+     MODALS
+════════════════════════════════════════ -->
+
+<!-- Edit initiative -->
+<div class="modal-backdrop" id="modal-editinit">
+  <div class="modal">
+    <div class="modal-title">
+      EDIT INITIATIVE
+      <span class="modal-close" onclick="closeModal('modal-editinit')">✕ CLOSE</span>
+    </div>
+    <input type="hidden" id="edit-init-id">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:10px" id="edit-init-name"></div>
+    <div class="f-row"><label class="f-label">INITIATIVE VALUE</label><input class="f-input mono" id="edit-init-val" type="number"></div>
+    <div class="modal-btns">
+      <button class="btn green" onclick="confirmEditInit()">CONFIRM</button>
+      <button class="btn" onclick="closeModal('modal-editinit')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Conditions -->
+<div class="modal-backdrop" id="modal-condition">
+  <div class="modal">
+    <div class="modal-title">
+      APPLY CONDITION
+      <span class="modal-close" onclick="closeModal('modal-condition')">✕ CLOSE</span>
+    </div>
+    <input type="hidden" id="cond-target-id">
+    <div class="panel-label" style="margin-bottom:8px">■ STANDARD CONDITIONS</div>
+    <div class="cond-presets">
+      <div class="cond-preset" onclick="addConditionPreset('STUNNED')">STUNNED</div>
+      <div class="cond-preset" onclick="addConditionPreset('PRONE')">PRONE</div>
+      <div class="cond-preset" onclick="addConditionPreset('SUPPRESSED')">SUPPRESSED</div>
+      <div class="cond-preset" onclick="addConditionPreset('EXPOSED')">EXPOSED</div>
+      <div class="cond-preset" onclick="addConditionPreset('BLINDED')">BLINDED</div>
+      <div class="cond-preset" onclick="addConditionPreset('SHAKEN')">SHAKEN</div>
+      <div class="cond-preset" onclick="addConditionPreset('OVERWATCH')">OVERWATCH</div>
+    </div>
+    <div class="panel" style="margin-bottom:0;background:var(--surface)">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.16em;color:var(--text-dim);margin-bottom:4px">CONDITION NOTES</div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.5">
+        <strong style="color:var(--text)">STUNNED</strong> — Skip next turn. Cannot use Reactions until next turn.<br>
+        <strong style="color:var(--text)">PRONE</strong> — Disadvantage on attacks; melee attackers gain Advantage.<br>
+        <strong style="color:var(--text)">SUPPRESSED</strong> — Half movement. Disadvantage ranged. No dash.<br>
+        <strong style="color:var(--text)">EXPOSED</strong> — Attackers +2 to hit. Armor reduced by 1.
+      </div>
+    </div>
+    <div class="panel-label" style="margin-top:12px;margin-bottom:6px">■ CUSTOM CONDITION</div>
+    <div style="display:flex;gap:7px">
+      <input class="f-input mono" id="cond-custom" placeholder="Custom condition..." style="flex:1">
+      <button class="btn amber" onclick="addConditionCustom()">APPLY</button>
+    </div>
+    <div class="modal-btns"><button class="btn" onclick="closeModal('modal-condition')">CLOSE</button></div>
+  </div>
+</div>
+
+<!-- HP adjust modal (for large adjustments) -->
+<div class="modal-backdrop" id="modal-hpadj">
+  <div class="modal">
+    <div class="modal-title">
+      ADJUST HP / DAMAGE
+      <span class="modal-close" onclick="closeModal('modal-hpadj')">✕ CLOSE</span>
+    </div>
+    <input type="hidden" id="hpadj-id">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:10px" id="hpadj-name"></div>
+    <div class="f-row"><label class="f-label">AMOUNT (positive = damage, negative = heal)</label><input class="f-input mono" id="hpadj-val" type="number" value="0"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
+      <label style="font-family:'Share Tech Mono',monospace;font-size:7.5px;color:var(--text-dim)">
+        <input type="checkbox" id="hpadj-armor"> Apply armor reduction
+      </label>
+    </div>
+    <div class="modal-btns">
+      <button class="btn red" onclick="confirmHpAdj('damage')">DAMAGE</button>
+      <button class="btn green" onclick="confirmHpAdj('heal')">HEAL</button>
+      <button class="btn" onclick="closeModal('modal-hpadj')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>UGD // SPIKE: THE REEVES TRIALS // COMBAT SUITE GM-05</span>
+  <span>■ GM EYES ONLY // CLEARANCE ALPHA ■</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  CONSTANTS & GLOBALS
+// ═══════════════════════════════════════════════════════
+
+const STORAGE_COMBAT   = 'spike_gm_combat_v2';
+const STORAGE_HOSTILE  = 'spike_gm_hostiles_v2';
+const TRACKER_KEY      = 'spike_gm_tracker_v2';
+
+let combatants    = [];
+let hostileRoster = [];
+let currentTurnIdx = -1;
+let roundNum       = 0;
+let encounterActive = false;
+
+let selectedDie = 10;
+let rollLog = [];
+
+// ═══════════════════════════════════════════════════════
+//  SPIKE HELPERS
+// ═══════════════════════════════════════════════════════
+
+function spikeColor(n) {
+  n = parseInt(n) || 0;
+  if (n === 0)     return '#a0c848';
+  if (n <= 2)      return '#b8baa5';
+  if (n <= 5)      return '#b87820';
+  if (n <= 7)      return '#d06020';
+  if (n <= 9)      return '#c03030';
+  if (n === 10)    return '#e04040';
+  return '#ff2020';
+}
+
+function spikeLabel(n) {
+  n = parseInt(n) || 0;
+  if (n === 0)  return 'SERENE';
+  if (n <= 2)   return 'STABLE';
+  if (n <= 5)   return 'SHAKEN';
+  if (n <= 7)   return 'CRACKED';
+  if (n <= 9)   return 'OVERLOADED';
+  if (n === 10) return 'SPIKED';
+  return 'CONSUMED';
+}
+
+// ═══════════════════════════════════════════════════════
+//  PERSISTENCE
+// ═══════════════════════════════════════════════════════
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_COMBAT,  JSON.stringify({ combatants, currentTurnIdx, roundNum, encounterActive }));
+    localStorage.setItem(STORAGE_HOSTILE, JSON.stringify(hostileRoster));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const c = localStorage.getItem(STORAGE_COMBAT);
+    const h = localStorage.getItem(STORAGE_HOSTILE);
+    if (c) {
+      const d = JSON.parse(c);
+      combatants      = d.combatants      || [];
+      currentTurnIdx  = d.currentTurnIdx  ?? -1;
+      roundNum        = d.roundNum        ?? 0;
+      encounterActive = d.encounterActive ?? false;
+    }
+    if (h) hostileRoster = JSON.parse(h) || [];
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════
+//  PARTY TRACKER SYNC
+// ═══════════════════════════════════════════════════════
+
+function loadPartyTracker() {
+  let trackerData = null;
+  try {
+    const raw = localStorage.getItem(TRACKER_KEY);
+    if (raw) trackerData = JSON.parse(raw);
+  } catch(e) {}
+
+  const grid = document.getElementById('tracker-op-grid');
+  if (!trackerData || !trackerData.state) {
+    grid.innerHTML = '<span style="font-family:\'Share Tech Mono\',monospace;font-size:8px;color:var(--text-dim);">No operatives found in Party Tracker. Open gm_party_tracker.html on the same device first, then reload this page.</span>';
+    return;
+  }
+
+  const allOps = [];
+  for (let pi = 0; pi < trackerData.state.length; pi++) {
+    const party = trackerData.state[pi];
+    if (!party) continue;
+    for (let si = 0; si < party.length; si++) {
+      const slot = party[si];
+      if (!slot || !slot.charData) continue;
+      const cd = slot.charData;
+      allOps.push({ pi, si, cd, slot });
+    }
+  }
+
+  if (!allOps.length) {
+    grid.innerHTML = '<span style="font-family:\'Share Tech Mono\',monospace;font-size:8px;color:var(--text-dim);">Party Tracker found but no operatives loaded. Import .json files there first.</span>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  allOps.forEach(({ pi, si, cd, slot }) => {
+    const name = (cd.inputs && cd.inputs[0]) || 'UNKNOWN';
+    // Check if already in tracker
+    const alreadyIn = combatants.some(c => c.trackerRef === `${pi}-${si}`);
+    const btn = document.createElement('button');
+    btn.className = 'tracker-op-btn' + (alreadyIn ? ' loaded' : '');
+    btn.textContent = (alreadyIn ? '✓ ' : '+ ') + name.toUpperCase();
+    btn.title = `Import ${name} from Party Tracker`;
+    btn.onclick = () => importOperativeFromTracker(pi, si, cd, slot);
+    grid.appendChild(btn);
+  });
+}
+
+function importOperativeFromTracker(pi, si, cd, slot) {
+  // Don't double-import
+  if (combatants.some(c => c.trackerRef === `${pi}-${si}`)) {
+    alert(`${(cd.inputs && cd.inputs[0]) || 'Operative'} is already in the tracker.`);
+    return;
+  }
+
+  const attrVals = cd.attrVals || [1,1,1,1,1];
+  const awareness = attrVals[3] || 0; // index 3 = AWARENESS
+  const resolve   = attrVals[4] || 0;
+
+  const hpCur  = slot.sessionHp    !== undefined ? slot.sessionHp    : (cd.hpCurrent ?? 10);
+  const hpMax  = cd.hpMax ?? (10 + (attrVals[0] || 0));
+  const compCur= slot.sessionComp  !== undefined ? slot.sessionComp  : (cd.compCurrent ?? 5);
+  const compMax= cd.compMax ?? (5 + resolve);
+  const spike  = slot.sessionSpike !== undefined ? slot.sessionSpike : (parseInt(cd.currentSpike) || 0);
+
+  const init = rollD10() + awareness;
+
+  combatants.push({
+    id:          uid(),
+    name:        (cd.inputs && cd.inputs[0]) || 'OPERATIVE',
+    type:        'operative',
+    init,
+    initBonus:   awareness,
+    hp:          hpCur,
+    hpMax:       hpMax,
+    armor:       0,
+    comp:        compCur,
+    compMax:     compMax,
+    spike:       spike,
+    reactions:   [false, false],
+    status:      'alive',
+    conditions:  [],
+    notes:       '',
+    trackerRef:  `${pi}-${si}`,
+    attrVals,
+  });
+
+  if (encounterActive) sortInit(false);
+  saveState();
+  renderInitList();
+  loadPartyTracker(); // refresh buttons
+}
+
+// ═══════════════════════════════════════════════════════
+//  PAGE NAVIGATION
+// ═══════════════════════════════════════════════════════
+
+function switchPage(name) {
+  ['initiative','hostiles','roller'].forEach(p => {
+    document.getElementById('page-'  + p).classList.toggle('active', p === name);
+    document.getElementById('ntab-'  + p).classList.toggle('active', p === name);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  REACTIONS (per operative, 2 per long rest)
+// ═══════════════════════════════════════════════════════
+
+function toggleReaction(combatantId, idx) {
+  const c = combatants.find(x => x.id === combatantId);
+  if (!c) return;
+  if (!c.reactions) c.reactions = [false, false];
+  c.reactions[idx] = !c.reactions[idx];
+  saveState();
+  renderReactionRoster();
+}
+
+function resetAllReactions() {
+  combatants.forEach(c => { c.reactions = [false, false]; });
+  saveState();
+  renderReactionRoster();
+}
+
+function resetOneReaction(combatantId) {
+  const c = combatants.find(x => x.id === combatantId);
+  if (!c) return;
+  c.reactions = [false, false];
+  saveState();
+  renderReactionRoster();
+}
+
+function renderReactionRoster() {
+  const roster = document.getElementById('reaction-roster');
+  if (!roster) return;
+
+  // Only show operatives (not hostiles — they don't use the reaction pool mechanic)
+  const ops = combatants.filter(c => c.type === 'operative' && c.status !== 'dead');
+
+  if (!ops.length) {
+    roster.innerHTML = '<span class="reaction-empty">No operatives in tracker.</span>';
+    return;
+  }
+
+  roster.innerHTML = ops.map(c => {
+    if (!c.reactions) c.reactions = [false, false];
+    const used = c.reactions.filter(Boolean).length;
+    const col = used >= 2 ? 'var(--red-bright)' : used === 1 ? 'var(--amber)' : 'var(--green)';
+    const pips = c.reactions.map((u, i) =>
+      `<div class="reaction-pip${u ? ' used' : ''}"
+        onclick="toggleReaction('${c.id}',${i})"
+        title="Reaction ${i+1} — click to toggle"></div>`
+    ).join('');
+    return `
+      <div class="reaction-op">
+        <div class="reaction-op-name" style="color:${col}">${escHtml(c.name)}</div>
+        <div class="reaction-pips">${pips}</div>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:${col};min-width:24px">${2-used}/2</span>
+        ${used > 0 ? `<span class="reaction-op-reset" onclick="resetOneReaction('${c.id}')" title="Reset this operative's reactions">↺</span>` : ''}
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  ADD FORM
+// ═══════════════════════════════════════════════════════
+
+let addType = 'operative';
+
+function setType(t) {
+  addType = t;
+  document.getElementById('tbtn-operative').className = 'type-btn' + (t === 'operative' ? ' active-operative' : '');
+  document.getElementById('tbtn-hostile').className   = 'type-btn' + (t === 'hostile'   ? ' active-hostile'   : '');
+}
+
+function rollInitFor() {
+  const bonus = parseInt(document.getElementById('add-initbonus').value) || 0;
+  const roll  = rollD10() + bonus;
+  document.getElementById('add-init').value = roll;
+}
+
+// ═══════════════════════════════════════════════════════
+//  COMBATANT MANAGEMENT
+// ═══════════════════════════════════════════════════════
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function addCombatant() {
+  const name = document.getElementById('add-name').value.trim();
+  if (!name) { document.getElementById('add-name').focus(); return; }
+
+  const init     = parseInt(document.getElementById('add-init').value)     || rollD10();
+  const initBonus= parseInt(document.getElementById('add-initbonus').value) || 0;
+  const hp       = parseInt(document.getElementById('add-hp').value)        || (addType === 'operative' ? 10 : 8);
+  const hpMax    = parseInt(document.getElementById('add-hpmax').value)     || hp;
+  const armor    = parseInt(document.getElementById('add-armor').value)     || 0;
+  const comp     = parseInt(document.getElementById('add-comp').value)      || 5;
+  const compMax  = parseInt(document.getElementById('add-compmax').value)   || comp;
+
+  combatants.push({
+    id: uid(), name, type: addType,
+    init, initBonus,
+    hp: Math.min(hp, hpMax), hpMax: Math.max(hpMax, 1),
+    armor, comp, compMax,
+    spike: 0,
+    reactions: [false, false],
+    status: 'alive', conditions: [], notes: ''
+  });
+
+  ['add-name','add-init','add-hp','add-hpmax','add-armor','add-comp','add-compmax','add-initbonus']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('add-initbonus').value = '0';
+
+  if (encounterActive) sortInit(false);
+  saveState();
+  renderInitList();
+}
+
+function rollAllInit() {
+  combatants.forEach(c => {
+    c.init = rollD10() + (c.initBonus || 0);
+  });
+  sortInit(true);
+}
+
+function sortInit(doRender = true) {
+  combatants.sort((a, b) => b.init - a.init || a.name.localeCompare(b.name));
+  saveState();
+  if (doRender) renderInitList();
+}
+
+function removeCombatant(id) {
+  const idx = combatants.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  combatants.splice(idx, 1);
+  if (encounterActive && currentTurnIdx >= combatants.length) currentTurnIdx = 0;
+  saveState();
+  renderInitList();
+}
+
+function clearEncounter() {
+  if (combatants.length && !confirm('Clear all combatants and reset the encounter?')) return;
+  combatants = [];
+  currentTurnIdx = -1;
+  roundNum = 0;
+  encounterActive = false;
+  saveState();
+  renderInitList();
+  updateRoundDisplay();
+  renderReactionRoster();
+  document.getElementById('btn-start').style.display = '';
+  document.getElementById('btn-next').style.display  = 'none';
+  loadPartyTracker();
+}
+
+function cycleStatus(id) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  const states = ['alive','down','dead'];
+  c.status = states[(states.indexOf(c.status) + 1) % states.length];
+  saveState();
+  renderInitList();
+}
+
+// ── HP / COMPOSURE adjustments ──
+
+function adjHp(id, delta) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  // delta < 0 means damage — apply armor
+  const eff = delta < 0 ? Math.min(delta + c.armor, 0) : delta;
+  c.hp = Math.min(c.hpMax, Math.max(0, c.hp + eff));
+  if (c.hp === 0 && c.status === 'alive') c.status = 'down';
+  saveState();
+  liveUpdateHp(c);
+  broadcastSyncFromCombat(c);
+}
+
+function openHpAdj(id) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('hpadj-id').value = id;
+  document.getElementById('hpadj-name').textContent = c.name + ' — HP ' + c.hp + '/' + c.hpMax;
+  document.getElementById('hpadj-val').value = '';
+  document.getElementById('hpadj-armor').checked = true;
+  openModal('modal-hpadj');
+}
+
+function confirmHpAdj(mode) {
+  const id  = document.getElementById('hpadj-id').value;
+  const val = Math.abs(parseInt(document.getElementById('hpadj-val').value) || 0);
+  const useArmor = document.getElementById('hpadj-armor').checked;
+  const c = combatants.find(x => x.id === id);
+  if (!c) { closeModal('modal-hpadj'); return; }
+
+  if (mode === 'damage') {
+    const reduction = useArmor ? c.armor : 0;
+    const net = Math.max(0, val - reduction);
+    c.hp = Math.max(0, c.hp - net);
+    if (c.hp === 0 && c.status === 'alive') c.status = 'down';
+  } else {
+    c.hp = Math.min(c.hpMax, c.hp + val);
+    if (c.hp > 0 && c.status === 'down') c.status = 'alive';
+  }
+  saveState();
+  renderInitList();
+  closeModal('modal-hpadj');
+  broadcastSyncFromCombat(c);
+}
+
+function adjComp(id, delta) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  c.comp = Math.min(c.compMax, Math.max(0, c.comp + delta));
+  saveState();
+  const el = document.getElementById('icomp-' + id);
+  if (el) el.textContent = c.comp + '/' + c.compMax;
+  // COMPOSURE 0 warning
+  if (c.comp === 0) {
+    const el2 = document.getElementById('icomp-' + id);
+    if (el2) el2.style.color = 'var(--red-bright)';
+  }
+  broadcastSyncFromCombat(c);
+}
+
+function adjSpike(id, delta) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  c.spike = Math.min(11, Math.max(0, (c.spike || 0) + delta));
+  saveState();
+  renderSpikeForCombatant(c);
+  broadcastSyncFromCombat(c);
+}
+
+function setSpike(id, val) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  c.spike = Math.min(11, Math.max(0, val));
+  saveState();
+  renderSpikeForCombatant(c);
+  broadcastSyncFromCombat(c);
+}
+
+function liveUpdateHp(c) {
+  const el    = document.getElementById('ihp-' + c.id);
+  const elBar = document.getElementById('ihpbar-' + c.id);
+  const stEl  = document.getElementById('istatus-' + c.id);
+  const pct   = Math.min(100, (c.hp / c.hpMax) * 100);
+  const col   = pct > 50 ? 'var(--green-dim)' : pct > 25 ? 'var(--amber)' : 'var(--red-bright)';
+  if (el)    el.textContent = c.hp + '/' + c.hpMax;
+  if (elBar) { elBar.style.width = pct + '%'; elBar.style.background = col; }
+  if (stEl)  { stEl.className = 'status-tag ' + c.status; stEl.textContent = c.status.toUpperCase(); }
+}
+
+function renderSpikeForCombatant(c) {
+  const container = document.getElementById('ispike-' + c.id);
+  if (!container) return;
+  container.innerHTML = buildSpikePipsHTML(c);
+}
+
+// ═══════════════════════════════════════════════════════
+//  ENCOUNTER FLOW
+// ═══════════════════════════════════════════════════════
+
+function startEncounter() {
+  if (!combatants.length) { alert('Add at least one combatant first.'); return; }
+  sortInit(false);
+  encounterActive = true;
+  currentTurnIdx  = 0;
+  roundNum        = 1;
+  saveState();
+  renderInitList();
+  updateRoundDisplay();
+  renderReactionRoster();
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-next').style.display  = '';
+}
+
+function nextTurn() {
+  if (!encounterActive || !combatants.length) return;
+
+  let next = (currentTurnIdx + 1) % combatants.length;
+  let safety = 0;
+  while (combatants[next].status === 'dead' && safety < combatants.length) {
+    next = (next + 1) % combatants.length;
+    safety++;
+  }
+
+  // New round counter only — reactions persist until long rest
+  if (next === 0 || next < currentTurnIdx) {
+    roundNum++;
+  }
+
+  currentTurnIdx = next;
+  saveState();
+  renderInitList();
+  updateRoundDisplay();
+}
+
+function updateRoundDisplay() {
+  const r = encounterActive ? roundNum : '—';
+  const t = encounterActive && combatants[currentTurnIdx]
+    ? combatants[currentTurnIdx].name
+    : '—';
+  document.getElementById('round-display').textContent = r;
+  document.getElementById('turn-display').textContent  = encounterActive ? (currentTurnIdx + 1) : '—';
+  document.getElementById('nav-round').textContent     = r;
+  document.getElementById('nav-turn').textContent      = t.slice(0,10).toUpperCase();
+  const ns = document.getElementById('nav-status');
+  if (ns) ns.className = 'nav-status' + (encounterActive ? ' active-enc' : '');
+}
+
+// ═══════════════════════════════════════════════════════
+//  CONDITIONS
+// ═══════════════════════════════════════════════════════
+
+function openConditionModal(id) {
+  document.getElementById('cond-target-id').value = id;
+  document.getElementById('cond-custom').value = '';
+  openModal('modal-condition');
+}
+
+function addConditionPreset(cond) {
+  const id = document.getElementById('cond-target-id').value;
+  applyCondition(id, cond);
+}
+
+function addConditionCustom() {
+  const id   = document.getElementById('cond-target-id').value;
+  const cond = document.getElementById('cond-custom').value.trim().toUpperCase();
+  if (cond) applyCondition(id, cond);
+  closeModal('modal-condition');
+}
+
+function applyCondition(id, cond) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  if (!c.conditions.includes(cond)) c.conditions.push(cond);
+  saveState();
+  const el = document.getElementById('iconds-' + id);
+  if (el) el.innerHTML = buildConditionsHTML(c);
+}
+
+function removeCondition(id, cond) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  c.conditions = c.conditions.filter(x => x !== cond);
+  saveState();
+  const el = document.getElementById('iconds-' + id);
+  if (el) el.innerHTML = buildConditionsHTML(c);
+}
+
+function buildConditionsHTML(c) {
+  return c.conditions.map(cond =>
+    `<span class="cond-chip" onclick="removeCondition('${c.id}','${cond}')" title="Click to remove">${cond}</span>`
+  ).join('') +
+  `<span class="cond-add" onclick="openConditionModal('${c.id}')" title="Add condition">+COND</span>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SPIKE PIPS HTML
+// ═══════════════════════════════════════════════════════
+
+function buildSpikePipsHTML(c) {
+  const spike = c.spike || 0;
+  const pips = Array.from({length: 11}, (_, i) => {
+    const filled = i < spike;
+    const col = filled ? spikeColor(i + 1) : 'transparent';
+    return `<div class="spike-pip" onclick="setSpike('${c.id}',${i+1 === spike ? i : i+1})"
+      style="background:${col};border-color:${filled ? col : 'var(--border-hi)'}"
+      title="SPIKE ${i+1}${i+1 === spike ? ' (click to decrease)' : ''}"></div>`;
+  }).join('');
+
+  const col   = spikeColor(spike);
+  const label = spikeLabel(spike);
+
+  return `
+    <div class="spike-lbl">SPIKE</div>
+    <div class="spike-pips">${pips}</div>
+    <div class="spike-val-badge" style="color:${col}">
+      ${spike}/11 — ${label}
+    </div>
+    <div style="display:flex;gap:2px;margin-top:3px">
+      <button class="step-btn red" onclick="adjSpike('${c.id}',-1)" title="SPIKE -1">−</button>
+      <button class="step-btn up"  onclick="adjSpike('${c.id}',+1)" title="SPIKE +1">+</button>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER INITIATIVE LIST
+// ═══════════════════════════════════════════════════════
+
+function renderInitList() {
+  const list = document.getElementById('init-list');
+
+  if (!combatants.length) {
+    list.innerHTML = `
+      <div class="init-empty">
+        <div class="init-empty-icon">[ ]</div>
+        <div class="init-empty-text">NO COMBATANTS // ADD OPERATIVES OR IMPORT FROM PARTY TRACKER</div>
+      </div>`;
+    document.getElementById('turn-banner').classList.remove('visible');
+    document.getElementById('combatant-count').textContent = '// 0 COMBATANTS';
+    updateRoundDisplay();
+    renderReactionRoster();
+    return;
+  }
+
+  // Turn banner
+  if (encounterActive && combatants[currentTurnIdx]) {
+    const cur = combatants[currentTurnIdx];
+    const sc  = spikeColor(cur.spike || 0);
+    document.getElementById('turn-banner').classList.add('visible');
+    document.getElementById('turn-banner-name').textContent = cur.name;
+    document.getElementById('turn-banner-meta').innerHTML =
+      `ROUND <strong>${roundNum}</strong> &nbsp;|&nbsp;
+       TYPE: <strong>${cur.type.toUpperCase()}</strong> &nbsp;|&nbsp;
+       HP <strong>${cur.hp}/${cur.hpMax}</strong> &nbsp;|&nbsp;
+       SPIKE <strong style="color:${sc}">${cur.spike||0} — ${spikeLabel(cur.spike||0)}</strong>`;
+  } else {
+    document.getElementById('turn-banner').classList.remove('visible');
+  }
+
+  document.getElementById('combatant-count').textContent = `// ${combatants.length} COMBATANT${combatants.length !== 1 ? 'S' : ''}`;
+
+  list.innerHTML = combatants.map((c, i) => {
+    const isCurrent = encounterActive && i === currentTurnIdx;
+    const hpPct = c.hpMax ? Math.min(100, (c.hp / c.hpMax) * 100) : 0;
+    const hpCol = hpPct > 50 ? 'var(--green-dim)' : hpPct > 25 ? 'var(--amber)' : 'var(--red-bright)';
+    const compPct = c.compMax ? Math.min(100, (c.comp / c.compMax) * 100) : 0;
+    const compCol = compPct > 50 ? 'var(--amber-dim)' : compPct > 25 ? 'var(--amber)' : 'var(--red-bright)';
+    const spike = c.spike || 0;
+    const sc = spikeColor(spike);
+    const rowCls = [
+      'init-row',
+      c.type === 'hostile' ? 'hostile' : (c.trackerRef ? 'party-import' : 'operative'),
+      c.status === 'dead' ? 'dead' : '',
+      isCurrent ? 'current-turn' : ''
+    ].filter(Boolean).join(' ');
+
+    const hasHostileAtk = c.type === 'hostile' && c.hostileRef && hostileRoster.find(h => h.id === c.hostileRef);
+
+    return `
+    <div class="${rowCls}" id="irow-${c.id}" draggable="true" data-idx="${i}">
+      <!-- Drag handle -->
+      <div class="drag-handle" title="Drag to reorder">⠿</div>
+
+      <!-- Turn marker -->
+      <div class="turn-marker">${isCurrent ? '▶' : ''}</div>
+
+      <!-- Name + meta -->
+      <div class="init-info">
+        <div class="init-name">${escHtml(c.name)}</div>
+        <div class="init-meta">
+          ${c.type.toUpperCase()}
+          ${c.armor ? ` &nbsp;·&nbsp; ARM-${c.armor}` : ''}
+          &nbsp;·&nbsp; INIT ${c.init}${c.initBonus ? `(+${c.initBonus})` : ''}
+          ${c.trackerRef ? ' &nbsp;·&nbsp; <span style="color:#5ab0e0">PARTY TRACKER</span>' : ''}
+        </div>
+      </div>
+
+      <!-- HP / COMP vitals -->
+      <div class="init-vitals">
+        <div class="init-vital">
+          <div class="init-vital-lbl">HP</div>
+          <div class="init-vital-val" id="ihp-${c.id}">${c.hp}/${c.hpMax}</div>
+          <div class="vital-bar-wrap"><div class="vital-bar" id="ihpbar-${c.id}" style="width:${hpPct}%;background:${hpCol}"></div></div>
+          <div class="init-vital-steppers">
+            <button class="step-btn red" onclick="adjHp('${c.id}',-1)" title="Damage 1 (armor applies)">−</button>
+            <button class="step-btn up"  onclick="adjHp('${c.id}',+1)" title="Heal 1">+</button>
+            <button class="btn sm" onclick="openHpAdj('${c.id}')" title="Large HP adjustment" style="font-size:7px;padding:2px 5px;height:20px">±</button>
+          </div>
+        </div>
+        <div class="init-vital">
+          <div class="init-vital-lbl">COMP</div>
+          <div class="init-vital-val" id="icomp-${c.id}" style="color:${c.comp===0?'var(--red-bright)':'var(--text-hi)'}">${c.comp}/${c.compMax}</div>
+          <div class="vital-bar-wrap"><div class="vital-bar" style="width:${compPct}%;background:${compCol}"></div></div>
+          <div class="init-vital-steppers">
+            <button class="step-btn red" onclick="adjComp('${c.id}',-1)">−</button>
+            <button class="step-btn up"  onclick="adjComp('${c.id}',+1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPIKE cell -->
+      <div class="spike-cell" id="ispike-${c.id}">
+        ${buildSpikePipsHTML(c)}
+      </div>
+
+      <!-- Status + conditions -->
+      <div>
+        <div class="status-tag ${c.status}" id="istatus-${c.id}" onclick="cycleStatus('${c.id}')" title="Click to cycle status" style="margin-bottom:5px">
+          ${c.status.toUpperCase()}
+        </div>
+        <div class="init-conditions" id="iconds-${c.id}">${buildConditionsHTML(c)}</div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start">
+        ${hasHostileAtk ? `<button class="btn sm amber" onclick="openAttackPanel('${c.id}')">⬡ ATK</button>` : ''}
+        <button class="btn sm red" onclick="removeCombatant('${c.id}')" title="Remove from tracker">✕ REM</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  updateRoundDisplay();
+  renderReactionRoster();
+  initDragDrop();
+}
+
+// ═══════════════════════════════════════════════════════
+//  DRAG & DROP (INITIATIVE REORDER)
+// ═══════════════════════════════════════════════════════
+
+let dragSrcIdx = null;
+
+function initDragDrop() {
+  document.querySelectorAll('.init-row[draggable]').forEach((row, idx) => {
+    row.addEventListener('dragstart', e => {
+      dragSrcIdx = idx;
+      setTimeout(() => row.classList.add('dragging'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      document.querySelectorAll('.init-row').forEach(r => r.classList.remove('drag-over'));
+      dragSrcIdx = null;
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.init-row').forEach(r => r.classList.remove('drag-over'));
+      if (dragSrcIdx !== idx) row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      if (dragSrcIdx === null || dragSrcIdx === idx) return;
+      const [moved] = combatants.splice(dragSrcIdx, 1);
+      combatants.splice(idx, 0, moved);
+      if (encounterActive) {
+        if      (dragSrcIdx === currentTurnIdx) currentTurnIdx = idx;
+        else if (dragSrcIdx < currentTurnIdx && idx >= currentTurnIdx) currentTurnIdx--;
+        else if (dragSrcIdx > currentTurnIdx && idx <= currentTurnIdx) currentTurnIdx++;
+      }
+      dragSrcIdx = null;
+      saveState();
+      renderInitList();
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  ADD-FORM TOGGLE
+// ═══════════════════════════════════════════════════════
+
+function toggleAddForm() {
+  const body = document.getElementById('add-form-body');
+  const icon = document.getElementById('add-form-icon');
+  const open = body.classList.toggle('open');
+  icon.textContent = open ? '▼' : '▶';
+}
+
+function openEditInit(id) {
+  const c = combatants.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('edit-init-id').value = id;
+  document.getElementById('edit-init-name').textContent = c.name;
+  document.getElementById('edit-init-val').value = c.init;
+  openModal('modal-editinit');
+}
+
+function confirmEditInit() {
+  const id  = document.getElementById('edit-init-id').value;
+  const val = parseInt(document.getElementById('edit-init-val').value) || 0;
+  const c   = combatants.find(x => x.id === id);
+  if (c) { c.init = val; saveState(); sortInit(); }
+  closeModal('modal-editinit');
+}
+
+// ═══════════════════════════════════════════════════════
+//  HOSTILE ROSTER
+// ═══════════════════════════════════════════════════════
+
+function saveHostile() {
+  const name = document.getElementById('h-name').value.trim();
+  if (!name) { document.getElementById('h-name').focus(); return; }
+
+  const attacks = [];
+  document.querySelectorAll('#attacks-builder .attack-build-row').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const aName  = inputs[0]?.value.trim();
+    const aDice  = inputs[1]?.value.trim();
+    const aBonus = inputs[2]?.value.trim();
+    if (aName || aDice) attacks.push({ name: aName || '—', dice: aDice || '1d10', bonus: aBonus || '0' });
+  });
+
+  hostileRoster.push({
+    id: uid(), name,
+    tier:    document.getElementById('h-tier').value.trim(),
+    body:    parseInt(document.getElementById('h-body').value)    || 1,
+    mind:    parseInt(document.getElementById('h-mind').value)    || 1,
+    tech:    parseInt(document.getElementById('h-tech').value)    || 1,
+    aware:   parseInt(document.getElementById('h-aware').value)   || 1,
+    resolve: parseInt(document.getElementById('h-resolve').value) || 1,
+    hp:      parseInt(document.getElementById('h-hp').value)      || 10,
+    comp:    parseInt(document.getElementById('h-comp').value)    || 5,
+    armor:   parseInt(document.getElementById('h-armor').value)   || 0,
+    attacks,
+    notes: document.getElementById('h-notes').value.trim()
+  });
+
+  saveState();
+  clearHostileForm();
+  renderHostileRoster();
+}
+
+function clearHostileForm() {
+  ['h-name','h-tier','h-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['h-body','h-mind','h-tech','h-aware','h-resolve'].forEach(id => { const el = document.getElementById(id); if (el) el.value = '1'; });
+  ['h-hp','h-comp'].forEach(id => { const el = document.getElementById(id); if (el) el.value = id==='h-hp'?'10':'5'; });
+  document.getElementById('h-armor').value = '0';
+  document.getElementById('attacks-builder').innerHTML = `
+    <div class="attack-build-row">
+      <div><label class="f-label">NAME</label><input class="f-input sm" placeholder="e.g. Service Pistol"></div>
+      <div><label class="f-label">DAMAGE</label><input class="f-input sm mono" placeholder="1d10"></div>
+      <div><label class="f-label">BONUS</label><input class="f-input sm mono" placeholder="+1"></div>
+      <div style="align-self:flex-end"><button class="btn sm red" onclick="removeAtkRow(this)">✕</button></div>
+    </div>`;
+}
+
+function addAtkRow() {
+  const row = document.createElement('div');
+  row.className = 'attack-build-row';
+  row.innerHTML = `
+    <div><label class="f-label">NAME</label><input class="f-input sm" placeholder="Attack name"></div>
+    <div><label class="f-label">DAMAGE</label><input class="f-input sm mono" placeholder="2d10"></div>
+    <div><label class="f-label">BONUS</label><input class="f-input sm mono" placeholder="+2"></div>
+    <div style="align-self:flex-end"><button class="btn sm red" onclick="removeAtkRow(this)">✕</button></div>`;
+  document.getElementById('attacks-builder').appendChild(row);
+}
+
+function removeAtkRow(btn) {
+  const rows = document.querySelectorAll('#attacks-builder .attack-build-row');
+  if (rows.length <= 1) return;
+  btn.closest('.attack-build-row').remove();
+}
+
+function deleteHostile(id) {
+  hostileRoster = hostileRoster.filter(h => h.id !== id);
+  saveState();
+  renderHostileRoster();
+}
+
+function deployHostile() {
+  if (!hostileRoster.length) { alert('No hostiles in roster.'); return; }
+  hostileRoster.forEach(h => {
+    const init = rollD10() + (h.aware || 0);
+    combatants.push({
+      id: uid(), name: h.name, type: 'hostile',
+      init, initBonus: h.aware || 0,
+      hp: h.hp, hpMax: h.hp,
+      armor: h.armor || 0,
+      comp: h.comp || 5, compMax: h.comp || 5,
+      spike: 0,
+      reactions: [false, false],
+      status: 'alive', conditions: [],
+      hostileRef: h.id
+    });
+  });
+  saveState();
+  switchPage('initiative');
+  if (encounterActive) sortInit(false);
+  renderInitList();
+}
+
+function deployOne(id) {
+  const h = hostileRoster.find(x => x.id === id);
+  if (!h) return;
+  const init = rollD10() + (h.aware || 0);
+  combatants.push({
+    id: uid(), name: h.name, type: 'hostile',
+    init, initBonus: h.aware || 0,
+    hp: h.hp, hpMax: h.hp,
+    armor: h.armor || 0,
+    comp: h.comp || 5, compMax: h.comp || 5,
+    spike: 0,
+    reactions: [false, false],
+    status: 'alive', conditions: [],
+    hostileRef: h.id
+  });
+  saveState();
+  switchPage('initiative');
+  if (encounterActive) sortInit(false);
+  renderInitList();
+}
+
+function renderHostileRoster() {
+  const grid  = document.getElementById('hostile-grid');
+  const count = document.getElementById('hostile-count');
+  count.textContent = `// ${hostileRoster.length} SAVED`;
+
+  if (!hostileRoster.length) {
+    grid.innerHTML = '<div style="font-family:\'Share Tech Mono\',monospace;font-size:8.5px;color:var(--text-dim);padding:20px;border:1px dashed var(--border)">No hostiles saved. Build a stat block and save it.</div>';
+    return;
+  }
+
+  grid.innerHTML = hostileRoster.map(h => `
+    <div class="hostile-card">
+      <div class="hostile-card-header">
+        <div>
+          <div class="hostile-card-name">${escHtml(h.name)}</div>
+          ${h.tier ? `<div style="font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.12em;color:var(--text-dim)">${escHtml(h.tier)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:5px;flex-direction:column;align-items:flex-end">
+          <div style="display:flex;gap:4px">
+            <button class="btn sm green" onclick="deployOne('${h.id}')">▶ DEPLOY</button>
+            <button class="btn sm red"   onclick="deleteHostile('${h.id}')">✕</button>
+          </div>
+        </div>
+      </div>
+      <div class="hostile-card-body">
+        <div class="hostile-stat-row">
+          ${['BODY','MIND','TECH','AWARE','RES'].map((a,i) => {
+            const vals = [h.body,h.mind,h.tech,h.aware,h.resolve];
+            return `<div class="hostile-stat"><div class="hostile-stat-lbl">${a}</div><div class="hostile-stat-val">${vals[i]||0}</div></div>`;
+          }).join('')}
+        </div>
+        <div class="hostile-vitals">
+          <div class="hostile-vital"><div class="hostile-vital-lbl">HP</div><div class="hostile-vital-val">${h.hp}</div></div>
+          <div class="hostile-vital"><div class="hostile-vital-lbl">COMP</div><div class="hostile-vital-val">${h.comp}</div></div>
+          <div class="hostile-vital"><div class="hostile-vital-lbl">ARMOR</div><div class="hostile-vital-val">${h.armor}</div></div>
+        </div>
+        ${h.attacks && h.attacks.length ? `
+          <div class="hostile-attacks">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:6.5px;letter-spacing:.14em;color:var(--text-dim);margin-bottom:5px">ATTACKS</div>
+            ${h.attacks.map(a => `
+              <div class="attack-entry">
+                <div class="attack-name">${escHtml(a.name)}</div>
+                <div class="attack-dice">${escHtml(a.dice)}${a.bonus && a.bonus !== '0' ? ` (${a.bonus})` : ''}</div>
+                <button class="btn sm amber" onclick="quickRollAtk('${escHtml(a.name)}','${escHtml(a.dice)}',${parseInt(a.bonus)||0})">⬡</button>
+              </div>`).join('')}
+          </div>` : ''}
+        ${h.notes ? `<div style="font-family:'Share Tech Mono',monospace;font-size:8.5px;color:var(--text-dim);padding-top:7px;border-top:1px solid var(--border);margin-top:6px;line-height:1.5">${escHtml(h.notes)}</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function openAttackPanel(combatantId) {
+  const c = combatants.find(x => x.id === combatantId);
+  if (!c || !c.hostileRef) return;
+  const h = hostileRoster.find(x => x.id === c.hostileRef);
+  if (!h || !h.attacks || !h.attacks.length) return;
+  const atk = h.attacks[0];
+  document.getElementById('atk-label').value   = `${c.name} — ${atk.name}`;
+  document.getElementById('atk-dmg').value     = atk.dice || '1d10';
+  document.getElementById('atk-bonus').value   = parseInt(atk.bonus) || 0;
+  document.getElementById('atk-dmgmod').value  = 0;
+  switchPage('roller');
+}
+
+function quickRollAtk(label, dice, bonus) {
+  switchPage('roller');
+  const result = rollDiceStr(dice);
+  const total  = result.total + bonus;
+  addToLog({ expr: `${dice}${bonus>=0?'+':''}${bonus}`, label: `${label} DAMAGE`, rolls: result.rolls, sides: result.sides, total, tn: 0, timestamp: now() });
+}
+
+// ═══════════════════════════════════════════════════════
+//  DICE ROLLER
+// ═══════════════════════════════════════════════════════
+
+function rollD10() { return Math.ceil(Math.random() * 10); }
+
+function rollDiceStr(str) {
+  const m = str.trim().match(/^(\d+)d(\d+)$/i);
+  if (!m) return { rolls: [0], total: 0, sides: 10 };
+  const count = Math.min(parseInt(m[1]), 20);
+  const sides = parseInt(m[2]);
+  const rolls = Array.from({ length: count }, () => Math.ceil(Math.random() * sides));
+  return { rolls, total: rolls.reduce((a, b) => a + b, 0), sides };
+}
+
+function selectDie(n) {
+  selectedDie = n;
+  document.querySelectorAll('.die-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.die) === n);
+  });
+  document.getElementById('r-sides').value = n;
+}
+
+function rollDice() {
+  const count = Math.min(parseInt(document.getElementById('r-count').value) || 1, 20);
+  const sides = parseInt(document.getElementById('r-sides').value) || 10;
+  const mod   = parseInt(document.getElementById('r-mod').value)   || 0;
+  const tn    = parseInt(document.getElementById('r-tn').value)    || 0;
+  const mode  = document.getElementById('r-mode').value;
+  const label = document.getElementById('r-label').value.trim() || `${count}d${sides}`;
+
+  let rolls, total;
+
+  if (mode === 'advantage' || mode === 'disadvantage') {
+    const r1 = Array.from({ length: count }, () => Math.ceil(Math.random() * sides));
+    const r2 = Array.from({ length: count }, () => Math.ceil(Math.random() * sides));
+    const t1 = r1.reduce((a, b) => a + b, 0) + mod;
+    const t2 = r2.reduce((a, b) => a + b, 0) + mod;
+    if (mode === 'advantage')    { rolls = t1 >= t2 ? r1 : r2; total = Math.max(t1, t2); }
+    else                          { rolls = t1 <= t2 ? r1 : r2; total = Math.min(t1, t2); }
+  } else {
+    rolls = Array.from({ length: count }, () => Math.ceil(Math.random() * sides));
+    total = rolls.reduce((a, b) => a + b, 0) + mod;
+  }
+
+  addToLog({ expr: `${count}d${sides}${mod?((mod>0?'+':'')+mod):''}${mode!=='normal'?` (${mode})`:''}`, label, rolls, sides, total, tn, timestamp: now() });
+}
+
+function quickRoll(label, diceStr, mod, tn) {
+  const result = rollDiceStr(diceStr);
+  const total  = result.total + (mod || 0);
+  addToLog({ expr: diceStr + (mod?(mod>0?'+':'')+mod:''), label, rolls: result.rolls, sides: result.sides, total, tn: tn||0, timestamp: now() });
+}
+
+function rollAttack() {
+  const label = document.getElementById('atk-label').value.trim() || 'Attack Roll';
+  const bonus = parseInt(document.getElementById('atk-bonus').value) || 0;
+  const tn    = parseInt(document.getElementById('atk-tn').value)   || 0;
+  const roll  = rollD10();
+  const total = roll + bonus;
+  const isCrit = roll === 10;
+  const isFault = roll === 1;
+  addToLog({
+    expr: `1d10${bonus>=0?'+':''}${bonus}`,
+    label: `⬡ ${label}${isCrit ? ' ★ CRIT SUCCESS' : isFault ? ' ✗ CRIT FAULT' : ''}`,
+    rolls: [roll], sides: 10, total, tn, timestamp: now(),
+    crit: isCrit, fault: isFault
+  });
+}
+
+function rollDamage() {
+  const diceStr = document.getElementById('atk-dmg').value.trim() || '1d10';
+  const mod     = parseInt(document.getElementById('atk-dmgmod').value) || 0;
+  const label   = (document.getElementById('atk-label').value.trim() || 'Attack') + ' DAMAGE';
+  const result  = rollDiceStr(diceStr);
+  const total   = result.total + mod;
+  addToLog({ expr: `${diceStr}${mod?(mod>0?'+':'')+mod:''}`, label: `💥 ${label}`, rolls: result.rolls, sides: result.sides, total, tn: 0, timestamp: now() });
+}
+
+function addToLog(entry) {
+  rollLog.unshift(entry);
+  if (rollLog.length > 50) rollLog.pop();
+  renderLog();
+}
+
+function renderLog() {
+  const log = document.getElementById('result-log');
+  if (!rollLog.length) {
+    log.innerHTML = '<div class="result-empty">NO ROLLS YET // SELECT DICE AND ROLL</div>';
+    return;
+  }
+
+  log.innerHTML = rollLog.map(e => {
+    const hasCheck = e.tn > 0;
+    const success  = hasCheck ? e.total >= e.tn : null;
+    const cls      = e.crit ? 'success' : e.fault ? 'fail' : (hasCheck ? (success ? 'success' : 'fail') : 'neutral');
+    const vsText   = e.crit ? '★ CRITICAL SUCCESS' : e.fault ? '✗ CRITICAL FAULT' :
+                     hasCheck ? (success ? `✓ SUCCESS vs TN ${e.tn}` : `✗ FAIL vs TN ${e.tn}`) : '';
+
+    const rollPips = e.rolls.map(r => {
+      const isMax = r === e.sides;
+      const isMin = r === 1;
+      return `<span class="roll-individual${isMax?' max':isMin?' min':''}">${r}</span>`;
+    }).join('');
+
+    return `
+    <div class="result-entry">
+      <div>
+        <div class="result-dice-expr">${escHtml(e.expr)}</div>
+        <div class="result-timestamp">${e.timestamp}</div>
+      </div>
+      <div>
+        <div class="result-label">${escHtml(e.label)}</div>
+        <div class="result-rolls">${rollPips}</div>
+      </div>
+      <div class="result-total-wrap">
+        <div class="result-total ${cls}">${e.total}</div>
+        ${vsText ? `<div class="result-vs-tn ${cls}">${vsText}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearLog() { rollLog = []; renderLog(); }
+
+// ═══════════════════════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════════════
+//  LIVE SYNC — BROADCASTCHANNEL BRIDGE
+// ═══════════════════════════════════════════════════════
+
+const syncChannel = typeof BroadcastChannel !== 'undefined'
+  ? new BroadcastChannel('spike_live_sync')
+  : null;
+
+let _combatSyncPillTimer = null;
+let _combatPresenceTimer = null;
+
+function setCombatSyncPill(state) {
+  const pill = document.getElementById('sync-pill-combat');
+  if (!pill) return;
+  pill.className = 'sync-pill' + (state !== 'idle' ? ' ' + state : '');
+  pill.textContent = state === 'pulse' ? 'SYNCED ←'
+                   : state === 'live'  ? 'TRACKER LINKED'
+                   :                     'NO TRACKER LINK';
+  if (state === 'pulse') {
+    clearTimeout(_combatSyncPillTimer);
+    _combatSyncPillTimer = setTimeout(() => setCombatSyncPill('live'), 1500);
+  }
+}
+
+// Broadcast outward: combat → tracker
+function broadcastSyncFromCombat(c) {
+  if (!syncChannel || !c || !c.trackerRef) return;
+  const [pi, si] = c.trackerRef.split('-').map(Number);
+  syncChannel.postMessage({
+    type: 'update', src: 'combat', pi, si,
+    spike: c.spike ?? 0, hp: c.hp, comp: c.comp
+  });
+}
+
+// Flash an init row on incoming remote update
+function flashSyncRow(id) {
+  const row = document.getElementById('irow-' + id);
+  if (!row) return;
+  row.classList.remove('sync-flash');
+  void row.offsetWidth;
+  row.classList.add('sync-flash');
+}
+
+// Heartbeat: ping the tracker every 4s to detect presence
+function startCombatPresenceHeartbeat() {
+  if (!syncChannel) return;
+  function ping() {
+    syncChannel.postMessage({ type: 'ping', src: 'combat' });
+    clearTimeout(_combatPresenceTimer);
+    _combatPresenceTimer = setTimeout(() => setCombatSyncPill('idle'), 5000);
+  }
+  ping();
+  setInterval(ping, 4000);
+}
+
+// Handle all incoming messages
+if (syncChannel) {
+  syncChannel.onmessage = (e) => {
+    const msg = e.data;
+    if (!msg || !msg.type) return;
+
+    // Presence: reply to pings from tracker, receive pongs back
+    if (msg.type === 'ping' && msg.src === 'tracker') {
+      syncChannel.postMessage({ type: 'pong', src: 'combat' });
+      return;
+    }
+    if (msg.type === 'pong' && msg.src === 'tracker') {
+      clearTimeout(_combatPresenceTimer);
+      setCombatSyncPill('live');
+      return;
+    }
+
+    // Stat updates inbound from party tracker
+    if (msg.type !== 'update' || msg.src !== 'tracker') return;
+
+    const ref = `${msg.pi}-${msg.si}`;
+    const c = combatants.find(x => x.trackerRef === ref);
+    if (!c) return;
+
+    let changed = false;
+    if (msg.spike !== undefined && c.spike !== msg.spike) { c.spike = msg.spike; changed = true; }
+    if (msg.hp    !== undefined && c.hp    !== msg.hp)    { c.hp    = msg.hp;    changed = true; }
+    if (msg.comp  !== undefined && c.comp  !== msg.comp)  { c.comp  = msg.comp;  changed = true; }
+    if (!changed) return;
+
+    saveState();
+    liveUpdateHp(c);
+    const compEl = document.getElementById('icomp-' + c.id);
+    if (compEl) {
+      compEl.textContent = c.comp + '/' + c.compMax;
+      compEl.style.color = c.comp === 0 ? 'var(--red-bright)' : 'var(--text-hi)';
+    }
+    renderSpikeForCombatant(c);
+    // Refresh turn banner if this is the active combatant
+    if (encounterActive && combatants[currentTurnIdx] && combatants[currentTurnIdx].id === c.id) {
+      const sc = spikeColor(c.spike || 0);
+      const metaEl = document.getElementById('turn-banner-meta');
+      if (metaEl) metaEl.innerHTML =
+        `ROUND <strong>${roundNum}</strong> &nbsp;|&nbsp;
+         TYPE: <strong>${c.type.toUpperCase()}</strong> &nbsp;|&nbsp;
+         HP <strong>${c.hp}/${c.hpMax}</strong> &nbsp;|&nbsp;
+         SPIKE <strong style="color:${sc}">${c.spike||0} — ${spikeLabel(c.spike||0)}</strong>`;
+    }
+    flashSyncRow(c.id);
+    setCombatSyncPill('pulse');
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+//  UTILITY
+// ═══════════════════════════════════════════════════════
+
+function escHtml(str) {
+  if (typeof str !== 'string') return String(str || '');
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function now() {
+  return new Date().toLocaleTimeString('en-US', { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'Enter' && encounterActive) nextTurn();
+});
+
+document.getElementById('add-name').addEventListener('keydown', e => { if (e.key === 'Enter') addCombatant(); });
+document.getElementById('add-init').addEventListener('keydown', e => { if (e.key === 'Enter') addCombatant(); });
+document.getElementById('edit-init-val').addEventListener('keydown', e => { if (e.key === 'Enter') confirmEditInit(); });
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  loadPartyTracker();
+  renderInitList();
+  renderHostileRoster();
+  renderLog();
+  updateRoundDisplay();
+  renderReactionRoster();
+
+  selectDie(10);
+
+  if (encounterActive) {
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('btn-next').style.display  = '';
+  }
+
+  startCombatPresenceHeartbeat();
+});
+</script>
+</body>
+</html>
