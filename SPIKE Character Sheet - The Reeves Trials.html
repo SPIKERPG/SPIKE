@@ -1232,23 +1232,23 @@ function updateComp() {
 
 // ── SKILLS ──────────────────────────────────────────────────────
 const SKILLS = [
-  // BODY
-  { name: 'Firearms',       attr: 'BODY' },
-  { name: 'Close Combat',   attr: 'BODY' },
-  { name: 'Mobility',       attr: 'BODY' },
-  { name: 'Stealth',        attr: 'BODY' },
-  // MIND
-  { name: 'Medicine',       attr: 'MIND' },
-  { name: 'Investigation',  attr: 'MIND' },
-  { name: 'Persuasion',     attr: 'MIND' },
-  // TECH
-  { name: 'Computing',      attr: 'TECH' },
-  { name: 'Engineering',    attr: 'TECH' },
-  // AWARENESS
-  { name: 'Awareness',      attr: 'AWARENESS' },
-  { name: 'Survival',       attr: 'AWARENESS' },
-  // RESOLVE
-  { name: 'Intimidation',   attr: 'RESOLVE' },
+  // COMBAT
+  { name: 'Firearms',      attr: 'BODY',      group: 'COMBAT'    },
+  { name: 'Close Combat',  attr: 'BODY',      group: 'COMBAT'    },
+  // PHYSICAL
+  { name: 'Mobility',      attr: 'BODY',      group: 'PHYSICAL'  },
+  { name: 'Stealth',       attr: 'BODY',      group: 'PHYSICAL'  },
+  { name: 'Survival',      attr: 'AWARENESS', group: 'PHYSICAL'  },
+  // TECHNICAL
+  { name: 'Computing',     attr: 'TECH',      group: 'TECHNICAL' },
+  { name: 'Engineering',   attr: 'TECH',      group: 'TECHNICAL' },
+  { name: 'Medicine',      attr: 'MIND',      group: 'TECHNICAL' },
+  // MENTAL
+  { name: 'Investigation', attr: 'MIND',      group: 'MENTAL'    },
+  { name: 'Awareness',     attr: 'AWARENESS', group: 'MENTAL'    },
+  // SOCIAL
+  { name: 'Persuasion',    attr: 'MIND',      group: 'SOCIAL'    },
+  { name: 'Intimidation',  attr: 'RESOLVE',   group: 'SOCIAL'    },
 ];
 
 const skillState = new Array(SKILLS.length).fill(0); // 0=untrained, 1=trained, 2=specialized
@@ -1256,14 +1256,14 @@ const skillState = new Array(SKILLS.length).fill(0); // 0=untrained, 1=trained, 
 function buildSkills() {
   const list = document.getElementById('skillList');
   list.innerHTML = '';
-  let lastAttr = null;
+  let lastGroup = null;
   SKILLS.forEach((sk, i) => {
-    if (sk.attr !== lastAttr) {
+    if (sk.group !== lastGroup) {
       const hdr = document.createElement('div');
       hdr.className = 'skill-group-label';
-      hdr.textContent = '▸ ' + sk.attr;
+      hdr.textContent = '▸ ' + sk.group;
       list.appendChild(hdr);
-      lastAttr = sk.attr;
+      lastGroup = sk.group;
     }
     const row = document.createElement('div');
     row.className = 'skill-row' + (skillState[i] === 1 ? ' trained' : skillState[i] === 2 ? ' specialized' : '');
