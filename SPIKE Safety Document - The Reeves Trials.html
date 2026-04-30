@@ -712,22 +712,6 @@ footer {
   color: var(--text-dim);
 }
 
-/* ─── RESPONSIVE ─── */
-
-
-/* ── MOBILE IMPROVEMENTS ── */
-
-
-
-
-
-
-
-
-
-
-
-
 @media (max-width: 600px) {
 
   /* Hide the full header blocks */
@@ -779,15 +763,7 @@ footer {
   }
 }
 
-/* Hide the JS-injected bar on desktop */
-@media (min-width: 601px) {
-  #mobile-title-bar { display: none !important; }
-}
 
-
-/* ══════════════════════════════════════
-   MOBILE: nothing sticky, everything scrolls
-══════════════════════════════════════ */
 @media (max-width: 600px) {
   /* Remove sticky from header and nav — let everything scroll naturally */
   .top-band,
@@ -804,6 +780,142 @@ footer {
 
   /* Hide the JS-injected compact title bar if present */
   #mobile-title-bar { display: none !important; }
+}
+
+
+/* ══════════════════════════════════════
+   READABILITY — bump up small text globally
+══════════════════════════════════════ */
+
+/* Mono label sizes up slightly everywhere */
+.field-label, .section-label, .sub-label,
+.attr-label, .skill-label, .sheet-label,
+.block-label, .panel-title, .scat-name,
+.mini-lbl, .vital-lbl, .attr-lbl,
+.card-doc-id, .skill-hint, .trait-cat-head,
+.step-label, .zone-name, .tag,
+.loc-tag, .npc-role, .enemy-tier,
+.tl-date, .sh-num, .sec-num,
+.save-toolbar-label, .save-status {
+  font-size: 10px !important;
+}
+
+/* Body text up to 16px everywhere it was smaller */
+p, li, td, .step-text, .trait-fx, .flaw-body,
+.react-fx, .ms-fx, .beh-desc, .loc-body,
+.npc-body, .cc-body, .panel p, .tl-body li,
+.tl-body p, .data-table td { font-size: 16px !important; }
+
+/* Skill/trait names up */
+.sk-name, .trait-name, .flaw-name,
+.react-name, .ms-name, .bhv-name,
+.beh-title, .attack-name { font-size: 16px !important; }
+
+/* ══════════════════════════════════════
+   MOBILE: single column, natural scroll
+══════════════════════════════════════ */
+@media (max-width: 700px) {
+
+  /* Collapse ALL two/three/four-col grids to single column */
+  .g2, .g3, .g4,
+  .col-wrap, .notes-grid,
+  .identity-row, .vitals-row,
+  .attr-row, .two-col,
+  .trait-slots, .flaw-slots,
+  .lv-grid, .permission-grid,
+  .skill-cat, .enemy-grid,
+  .npc-grid, .loc-grid,
+  .beh-grid, .behavior-grid,
+  .dice-pair, .tn-row,
+  .zone-row, .f-group, .f-group3, .f-group5,
+  .cover-meta, .operative-grid,
+  .hostile-grid, .quick-rack,
+  .reaction-roster, .roller-layout {
+    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* But keep attr dots row horizontal */
+  .attr-dots, .spike-pips, .spike-track,
+  .spike-labels, .stepper-pips,
+  .init-vitals, .reaction-pips,
+  .tracker-rxn-pips, .spike-pip,
+  .reactions-pips, .btn-row,
+  .die-rack, .attr-row { 
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* attr-row specifically — keep as grid but 3-col */
+  .attr-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Make sure panels don't overflow */
+  .panel, .block, .vital-box,
+  .note-block, .slot, .hostile-card,
+  .enemy-card, .npc-card, .loc-card,
+  .campaign-card, .credit-block,
+  .contract-block, .tool-card { width: 100% !important; }
+
+  /* Un-sticky everything — natural scroll */
+  .top-band, .header-band, .header-main,
+  .main-header, .header, nav, .nav,
+  .page-tabs, .party-tabs-bar {
+    position: static !important;
+    top: auto !important;
+  }
+
+  /* Fix zone row to wrap nicely */
+  .zone-row {
+    flex-wrap: wrap !important;
+  }
+  .zone-box { width: 100% !important; border-right: 1px solid var(--border) !important; border-top: none !important; }
+  .zone-box:first-child { border-top: 1px solid var(--border) !important; }
+
+  /* Skill rows — keep horizontal layout internally */
+  .skill-row { flex-wrap: nowrap !important; }
+
+  /* Cover meta pills — wrap */
+  .cover-meta { flex-wrap: wrap !important; }
+  .cm-item { border-right: none !important; border-bottom: 1px solid var(--border-hi) !important; width: 100% !important; padding: 6px 0 !important; }
+
+  /* Larger tap targets for buttons */
+  .btn, .save-btn, .btn-sm, .type-btn,
+  .nav-tab, .tab { min-height: 40px !important; font-size: 11px !important; }
+
+  /* Padding breathing room */
+  main, .main, .page { padding-left: 14px !important; padding-right: 14px !important; }
+
+  /* Hide the JS-injected compact title bar */
+  #mobile-title-bar { display: none !important; }
+
+  /* Bigger cover title */
+  .cover-spike { font-size: 56px !important; }
+
+  /* Die rack — 2 columns on mobile */
+  .die-rack {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    flex-direction: unset !important;
+  }
+
+  /* Behavior grid — 1 col */
+  .beh-grid, .behavior-grid {
+    grid-template-columns: 1fr !important;
+    display: grid !important;
+    flex-direction: unset !important;
+  }
+
+  /* Spike labels — keep horizontal */
+  .spike-labels {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    flex-direction: unset !important;
+  }
 }
 
 </style>
