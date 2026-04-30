@@ -480,6 +480,98 @@ body::after {
   margin-top: 5px;
 }
 
+/* ─── REACTIONS ─── */
+.reactions-section { margin-bottom: 18px; }
+
+.reactions-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--amber);
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.reactions-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: .18em;
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.reactions-pips {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.reaction-pip-cs {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--amber);
+  background: rgba(184,120,32,.22);
+  cursor: pointer;
+  transition: all .12s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reaction-pip-cs::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--amber);
+  opacity: 0;
+  transition: opacity .12s;
+}
+
+.reaction-pip-cs.used {
+  background: var(--surface);
+  border-color: var(--border-hi);
+}
+
+.reaction-pip-cs.used::after { opacity: 0; }
+.reaction-pip-cs:not(.used)::after { opacity: 1; }
+
+.reaction-pip-cs:hover { border-color: var(--amber); opacity: .75; }
+
+.reactions-count {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--amber);
+  min-width: 24px;
+}
+
+.reactions-hint {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .1em;
+  color: var(--text-dim);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.reactions-reset {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  border: 1px solid var(--border-hi);
+  background: transparent;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all .12s;
+  white-space: nowrap;
+}
+.reactions-reset:hover { color: var(--amber); border-color: var(--amber); }
+
 /* ─── SPIKE SCALE ─── */
 .spike-section { margin-bottom: 18px; }
 
@@ -854,6 +946,24 @@ body::after {
           </div>
         </div>
 
+        <!-- REACTIONS -->
+        <div class="reactions-section">
+          <div class="section-label">REACTIONS <span>CLICK TO USE / LONG REST TO RESET</span></div>
+          <div class="reactions-box">
+            <div class="reactions-label">POOL</div>
+            <div class="reactions-pips">
+              <div class="reaction-pip-cs" id="rxnPip0" onclick="toggleReactionPip(0)" title="Reaction 1 — click to mark used"></div>
+              <div class="reaction-pip-cs" id="rxnPip1" onclick="toggleReactionPip(1)" title="Reaction 2 — click to mark used"></div>
+            </div>
+            <div class="reactions-count" id="rxnCount">2/2</div>
+            <div class="reactions-hint">
+              Overwatch · Counterattack · Protect · Brace<br>
+              Resets on <strong style="color:var(--text)">Long Rest</strong>
+            </div>
+            <button class="reactions-reset" onclick="resetReactionPips()" title="Long rest — restore all reactions">↺ LONG REST</button>
+          </div>
+        </div>
+
         <!-- SPIKE SCALE -->
         <div class="spike-section">
           <div class="section-label">SPIKE SCALE <span>CLICK TO SET CURRENT LEVEL</span></div>
@@ -1187,6 +1297,35 @@ const SPIKE_DATA = [
 ];
 
 let currentSpike = 0;
+let reactionPips = [false, false]; // false = available, true = used
+
+// ── REACTIONS ────────────────────────────────────────────────────
+
+function toggleReactionPip(idx) {
+  reactionPips[idx] = !reactionPips[idx];
+  renderReactionPips();
+  autoSave();
+}
+
+function resetReactionPips() {
+  reactionPips = [false, false];
+  renderReactionPips();
+  autoSave();
+}
+
+function renderReactionPips() {
+  const used = reactionPips.filter(Boolean).length;
+  reactionPips.forEach((u, i) => {
+    const pip = document.getElementById('rxnPip' + i);
+    if (pip) pip.classList.toggle('used', u);
+  });
+  const count = document.getElementById('rxnCount');
+  if (count) {
+    const remaining = 2 - used;
+    count.textContent = remaining + '/2';
+    count.style.color = remaining === 0 ? 'var(--red-bright)' : remaining === 1 ? 'var(--amber)' : 'var(--amber)';
+  }
+}
 
 function buildSpikeTrack() {
   const track = document.getElementById('spikeTrack');
@@ -1233,6 +1372,7 @@ function gatherState() {
     attrVals: [...attrVals],
     skillState: [...skillState],
     currentSpike,
+    reactionPips: [...reactionPips],
     inputs,
     textareas,
     hpCurrent:  parseInt(hpRange.value),
@@ -1257,6 +1397,10 @@ function applyState(state) {
   // SPIKE
   currentSpike = state.currentSpike ?? 0;
   buildSpikeTrack();
+
+  // Reactions
+  reactionPips = state.reactionPips || [false, false];
+  renderReactionPips();
 
   // HP / Composure — support both v2 (numbers) and v1 (filled-box arrays)
   const hpSlider   = document.getElementById('hpRange');
@@ -1324,8 +1468,10 @@ function resetSheet() {
   attrVals.fill(0);
   skillState.fill(0);
   currentSpike = 0;
+  reactionPips = [false, false];
   buildAttrs(); buildSkills(); buildSpikeTrack();
   updateHP(); updateComp();
+  renderReactionPips();
   const hpS = document.getElementById('hpRange');
   const cS  = document.getElementById('compRange');
   hpS.value = hpS.max; cS.value = cS.max;
@@ -1348,6 +1494,7 @@ buildSkills();
 buildSpikeTrack();
 updateHP();
 updateComp();
+renderReactionPips();
 
 // Restore from localStorage if available
 try {
