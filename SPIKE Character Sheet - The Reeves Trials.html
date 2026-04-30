@@ -781,14 +781,7 @@ body::after {
 }
 
 /* ─── RESPONSIVE ─── */
-@media (max-width: 680px) {
-  .identity-row { grid-template-columns: 1fr 1fr; }
-  .attr-row     { grid-template-columns: repeat(3, 1fr); }
-  .two-col      { grid-template-columns: 1fr; }
-  .notes-grid   { grid-template-columns: 1fr; }
-  .trait-slots  { grid-template-columns: 1fr; }
-  .flaw-slots   { grid-template-columns: 1fr; }
-}
+
 
 /* ─── SAVE/LOAD TOOLBAR ─── */
 .save-toolbar {
@@ -838,41 +831,94 @@ body::after {
 .save-status.warn { color: var(--amber); }
 
 /* ── MOBILE IMPROVEMENTS ── */
+
+
+
+
+
+
+
+
+
+
+
+
 @media (max-width: 600px) {
-  /* Hide redundant top-band spans, keep back link */
-  .top-band span { display: none; }
-  .top-band a { font-size: 11px !important; letter-spacing: .12em !important; }
 
-  /* Scale up tiny mono labels on the sheet */
-  .field-label, .section-label, .sub-label,
-  .attr-label, .skill-label, .sheet-label { font-size: 11px !important; }
-
-  /* Save toolbar: bigger buttons */
-  .save-toolbar button, .save-toolbar label {
-    font-size: 11px !important;
-    padding: 10px 14px !important;
-    min-height: 44px;
-  }
-}
-
-
-/* ── MOBILE HEADER COLLAPSE ── */
-@media (max-width: 600px) {
-  /* Hide top band and main header on mobile — show nav only */
+  /* Hide the full header blocks */
   .top-band,
   .header-band,
   .header-main,
   .main-header,
   .header { display: none !important; }
 
-  /* Nav/page-tabs stick to very top */
+  /* Compact title bar injected by JS */
+  #mobile-title-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: var(--surface, #111309);
+    border-bottom: 1px solid var(--border-hi, #303520);
+    padding: 8px 14px 6px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 9001;
+  }
+
+  #mobile-title-bar .mtb-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: .35em;
+    color: var(--text-hi, #dfe1cc);
+    line-height: 1;
+  }
+
+  #mobile-title-bar .mtb-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7px;
+    letter-spacing: .18em;
+    color: var(--text-dim, #626554);
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+
+  /* Nav sticks right below the title bar */
   nav,
   .nav,
   .page-tabs {
-    position: sticky;
-    top: 0 !important;
-    z-index: 600;
+    position: sticky !important;
+    top: 0 !important;   /* JS will set this to title bar height */
+    z-index: 9000 !important;
   }
+}
+
+/* Hide the JS-injected bar on desktop */
+@media (min-width: 601px) {
+  #mobile-title-bar { display: none !important; }
+}
+
+
+/* ══════════════════════════════════════
+   MOBILE: nothing sticky, everything scrolls
+══════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* Remove sticky from header and nav — let everything scroll naturally */
+  .top-band,
+  .header-band,
+  .header-main,
+  .main-header,
+  .header,
+  nav,
+  .nav,
+  .page-tabs {
+    position: static !important;
+    top: auto !important;
+  }
+
+  /* Hide the JS-injected compact title bar if present */
+  #mobile-title-bar { display: none !important; }
 }
 
 </style>
@@ -1525,5 +1571,8 @@ try {
   }
 } catch(e) {}
 </script>
+
+
+
 </body>
 </html>

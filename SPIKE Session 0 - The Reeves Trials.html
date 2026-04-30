@@ -494,53 +494,97 @@ footer {
 }
 
 /* ─── RESPONSIVE ─── */
-@media (max-width: 720px) {
-  .g2, .g3, .cw-grid { grid-template-columns: 1fr; }
-  .cover-title { font-size: 48px; }
-  .spike-level { flex-direction: column; }
-  .sl-num, .sl-label { width: 100%; border-right: 1px solid var(--border); }
-}
+
 
 /* ── MOBILE IMPROVEMENTS ── */
+
+
+
+
+
+
+
+
+
+
+
+
 @media (max-width: 600px) {
-  /* Hide redundant top-band spans, keep back link */
-  .top-band span { display: none; }
-  .top-band a { font-size: 11px !important; letter-spacing: .12em !important; }
 
-  /* Nav: bigger tap targets & readable text */
-  nav a {
-    font-size: 11px;
-    padding: 13px 14px;
-    letter-spacing: .1em;
-  }
-
-  /* Scale up tiny mono labels */
-  .section-label, .sub-label, .cds,
-  .concept-label, .q-label { font-size: 11px !important; }
-
-  p, li { font-size: 15px; }
-
-  .main, .content, .wrap { padding-left: 16px; padding-right: 16px; }
-}
-
-
-/* ── MOBILE HEADER COLLAPSE ── */
-@media (max-width: 600px) {
-  /* Hide top band and main header on mobile — show nav only */
+  /* Hide the full header blocks */
   .top-band,
   .header-band,
   .header-main,
   .main-header,
   .header { display: none !important; }
 
-  /* Nav/page-tabs stick to very top */
+  /* Compact title bar injected by JS */
+  #mobile-title-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: var(--surface, #111309);
+    border-bottom: 1px solid var(--border-hi, #303520);
+    padding: 8px 14px 6px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 9001;
+  }
+
+  #mobile-title-bar .mtb-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: .35em;
+    color: var(--text-hi, #dfe1cc);
+    line-height: 1;
+  }
+
+  #mobile-title-bar .mtb-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7px;
+    letter-spacing: .18em;
+    color: var(--text-dim, #626554);
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+
+  /* Nav sticks right below the title bar */
   nav,
   .nav,
   .page-tabs {
-    position: sticky;
-    top: 0 !important;
-    z-index: 600;
+    position: sticky !important;
+    top: 0 !important;   /* JS will set this to title bar height */
+    z-index: 9000 !important;
   }
+}
+
+/* Hide the JS-injected bar on desktop */
+@media (min-width: 601px) {
+  #mobile-title-bar { display: none !important; }
+}
+
+
+/* ══════════════════════════════════════
+   MOBILE: nothing sticky, everything scrolls
+══════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* Remove sticky from header and nav — let everything scroll naturally */
+  .top-band,
+  .header-band,
+  .header-main,
+  .main-header,
+  .header,
+  nav,
+  .nav,
+  .page-tabs {
+    position: static !important;
+    top: auto !important;
+  }
+
+  /* Hide the JS-injected compact title bar if present */
+  #mobile-title-bar { display: none !important; }
 }
 
 </style>
@@ -990,6 +1034,11 @@ footer {
 /* ── Sticky nav offset fix ── */
 (function() {
   function fix() {
+    if (window.innerWidth <= 600) {
+      var nav = document.querySelector('nav, .nav, .page-tabs');
+      if (nav) nav.style.top = '0';
+      return;
+    }
     var header = document.querySelector('.main-header');
     var nav    = document.querySelector('nav, .nav');
     if (!nav) return;
@@ -999,6 +1048,9 @@ footer {
   window.addEventListener('resize', fix);
 })();
 </script>
+
+
+
 
 </body>
 </html>
